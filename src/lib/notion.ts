@@ -17,7 +17,7 @@ const getTitleText = (titleProperty?: TitlePropertyItemObjectResponse | null): s
 // 定义获取富文本内容的辅助函数
 const getRichText = (richTextProperty?: RichTextPropertyItemObjectResponse | null): string => {
     if (!richTextProperty?.rich_text || !Array.isArray(richTextProperty.rich_text)) return '';
-    return richTextProperty.richText[0]?.plain_text ?? '';
+    return richTextProperty.rich_text[0]?.plain_text ?? '';
 };
 
 // 定义获取文件 URL 的辅助函数
