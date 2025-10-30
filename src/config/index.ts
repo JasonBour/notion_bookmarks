@@ -25,7 +25,7 @@ export const envConfig = {
     CLARITY_ID: process.env.NEXT_PUBLIC_CLARITY_ID ?? '',
     GA_ID: process.env.GA_ID ?? '',
     // 页面重新验证时间（秒）
-    // REVALIDATE_TIME: parseInt(process.env.REVALIDATE_TIME ?? '3600', 10),
+     REVALIDATE_TIME: parseInt(process.env.REVALIDATE_TIME ?? '360', 10),
 } as const;
 
 // 配置类型
