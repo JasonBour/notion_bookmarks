@@ -53,15 +53,87 @@ export const notion = new Client({
 });
 
 
+// -----------------------------------------------------------------
+// 获取分类（未修改，但它是 getCategoryMap 的依赖）
+// -----------------------------------------------------------------
+export const getCategories = cache(async () => {
+    const databaseId = envConfig.NOTION_CATEGORIES_DB_ID;
+    
+    if (!databaseId) {
+        return [];
+    }
 
-// 获取网址链接
+    try {
+        const response = await notion.databases.query({
+            database_id: databaseId,
+            filter: {
+                property: 'Enabled',
+                checkbox: {
+                    equals: true
+                }
+            },
+            sorts: [
+                {
+                    property: 'Order',
+                    direction: 'ascending',
+                },
+            ],
+        });
+
+        const categories = response.results
+            .filter((page): page is PageObjectResponse => 'properties' in page)
+            .map((page) => {
+                const pageProps = page.properties as Record<string, unknown>;
+                return {
+                    id: page.id,
+                    name: getTitleText(pageProps.Name as TitlePropertyItemObjectResponse),
+                    iconName: getRichText(pageProps.IconName as RichTextPropertyItemObjectResponse),
+                    order: (pageProps.Order as { number?: number })?.number || 0,
+                    enabled: (pageProps.Enabled as { checkbox?: boolean })?.checkbox || false,
+                };
+            });
+
+        return categories.sort((a, b) => a.order - b.order);
+    } catch (err) {
+        console.error('获取分类失败:', err);
+        return [];
+    }
+});
+
+
+// -----------------------------------------------------------------
+// 🚀 新增：获取分类 ID 到名称的映射表（用于高效查找）
+// -----------------------------------------------------------------
+/**
+ * 获取分类配置的 ID 到名称的映射表。
+ * @returns { [pageId]: categoryName }
+ */
+export const getCategoryMap = cache(async () => {
+    const categories = await getCategories();
+    
+    const categoryMap: Record<string, string> = {};
+    for (const category of categories) {
+        // 使用 Page ID 作为 Key，Name 作为 Value
+        categoryMap[category.id] = category.name;
+    }
+    
+    return categoryMap;
+});
+
+
+// -----------------------------------------------------------------
+// 🚀 修改：获取网址链接（已适配 Relation 属性）
+// -----------------------------------------------------------------
 export const getLinks = cache(async () => {
     const databaseId = envConfig.NOTION_LINKS_DB_ID!;
     const allLinks = [];
     let hasMore = true;
     let nextCursor: string | undefined;
-    
+
     try {
+        // 🚀 修改点 1: 在开始查询前获取分类映射表
+        const categoryMap = await getCategoryMap(); 
+        
         while (hasMore) {
             const response = await notion.databases.query({
                 database_id: databaseId,
@@ -83,14 +155,30 @@ export const getLinks = cache(async () => {
                 .map((page) => {
                     const pageProps = page.properties as Record<string, unknown>;
                     
+                    // 🚀 修改点 2: 解析 Relation 属性
+                    // 1. 获取关联属性对象
+                    const category1Relation = pageProps.category1 as { relation?: { id: string }[] };
+                    const category2Relation = pageProps.category2 as { relation?: { id: string }[] };
+                    
+                    // 2. 提取关联页面的 ID (Relation 属性返回一个数组，取第一个)
+                    const category1Id = category1Relation?.relation?.[0]?.id;
+                    const category2Id = category2Relation?.relation?.[0]?.id;
+
+                    // 3. 使用 categoryMap 查找 ID 对应的名称
+                    const category1Name = category1Id ? categoryMap[category1Id] : '未分类';
+                    const category2Name = category2Id ? categoryMap[category2Id] : '默认';
+
                     return {
                         id: page.id,
                         name: getTitleText(pageProps.Name as TitlePropertyItemObjectResponse),
                         created: (pageProps.Created as { created_time?: string })?.created_time || '',
                         desc: getRichText(pageProps.desc as RichTextPropertyItemObjectResponse),
                         url: (pageProps.URL as { url?: string })?.url || '#',
-                        category1: (pageProps.category1 as { select?: { name?: string } })?.select?.name || '未分类',
-                        category2: (pageProps.category2 as { select?: { name?: string } })?.select?.name || '默认',
+                        
+                        // 🚀 修改点 3: 使用新解析的名称
+                        category1: category1Name,
+                        category2: category2Name,
+                        
                         iconfile: getFileUrl(pageProps.iconfile as FilesPropertyItemObjectResponse),
                         iconlink: (pageProps.iconlink as { url?: string })?.url || '',
                         tags: (pageProps.Tags as { multi_select?: { name: string }[] })?.multi_select?.map((tag) => tag.name) || [],
@@ -105,139 +193,4 @@ export const getLinks = cache(async () => {
         // 对链接进行排序：先按是否置顶，再按创建时间
         allLinks.sort((a, b) => {
             // 检查是否包含"力荐👍"
-            const aIsTop = a.tags.includes('力荐👍');
-            const bIsTop = b.tags.includes('力荐👍');
-            
-            // 如果置顶状态不同，置顶的排在前面
-            if (aIsTop !== bIsTop) {
-                return aIsTop ? -1 : 1;
-            }
-            
-            // 如果置顶状态相同，按创建时间逆序排序
-            return new Date(b.created).getTime() - new Date(a.created).getTime();
-        });
-
-        return allLinks;
-    } catch (error) {
-        console.error('Error fetching links:', error);
-        return [];
-    }
-});
-
-// 获取网站配置
-export const getWebsiteConfig = cache(async () => {
-    try {
-        const response = await notion.databases.query({
-            database_id: envConfig.NOTION_WEBSITE_CONFIG_ID!,
-        });
-
-        const configMap: WebsiteConfig = {};
-
-        response.results.forEach((page) => {
-            const typedPage = page as NotionPage;
-            const properties = typedPage.properties;
-            
-            // 使用辅助函数获取文本
-            const name = getTitleText(properties.Name);
-            const value = getRichText(properties.Value);
-
-            if (name) {
-                configMap[name.toUpperCase()] = value;
-            }
-        });
-
-        // 获取配置数据库页面的图标作为网站图标
-        const database = await notion.databases.retrieve({
-            database_id: envConfig.NOTION_WEBSITE_CONFIG_ID!
-        }) as { icon?: { type: string; emoji?: string; file?: { url: string }; external?: { url: string } } };
-        let favicon = '/favicon.ico';
-
-        if (database.icon) {
-            if (database.icon.type === 'emoji') {
-                // 如果是 emoji，生成 data URL
-                favicon = `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>${database.icon.emoji}</text></svg>`;
-            } else if (database.icon.type === 'file' && database.icon.file) {
-                favicon = database.icon.file.url;
-            } else if (database.icon.type === 'external' && database.icon.external) {
-                favicon = database.icon.external.url;
-            }
-        }
-
-        // 返回基础配置
-        // 将配置对象转换为 WebsiteConfig 类型
-        const config: WebsiteConfig = {
-            // 基础配置
-            SITE_TITLE: configMap.SITE_TITLE ?? '我的导航',
-            SITE_DESCRIPTION: configMap.SITE_DESCRIPTION ?? '个人导航网站',
-            SITE_KEYWORDS: configMap.SITE_KEYWORDS ?? '导航,网址导航',
-            SITE_AUTHOR: configMap.SITE_AUTHOR ?? '',
-            SITE_FOOTER: configMap.SITE_FOOTER ?? '',
-            SITE_FAVICON: favicon,
-            // 主题配置
-            THEME_NAME: configMap.THEME_NAME ?? 'simple',
-            SHOW_THEME_SWITCHER: configMap.SHOW_THEME_SWITCHER ?? 'true',
-
-            // 社交媒体配置
-            SOCIAL_GITHUB: configMap.SOCIAL_GITHUB ?? '',
-            SOCIAL_BLOG: configMap.SOCIAL_BLOG ?? '',
-            SOCIAL_X: configMap.SOCIAL_X ?? '',
-            SOCIAL_JIKE: configMap.SOCIAL_JIKE ?? '',
-            SOCIAL_WEIBO: configMap.SOCIAL_WEIBO ?? '',
-            SOCIAL_XIAOHONGSHU: configMap.SOCIAL_XIAOHONGSHU ?? '',
-            // 分析和统计
-            CLARITY_ID: configMap.CLARITY_ID ?? '',
-            GA_ID: configMap.GA_ID ?? '',
-            // 新增widgets配置
-            WIDGET_CONFIG: configMap.WIDGET_CONFIG ?? '',
-        };
-
-        return config;
-    } catch (error) {
-        console.error('获取网站配置失败:', error);
-        throw new Error('获取网站配置失败');
-    }
-});
-
-export const getCategories = cache(async () => {
-  const databaseId = envConfig.NOTION_CATEGORIES_DB_ID;
-  
-  if (!databaseId) {
-    return [];
-  }
-
-  try {
-    const response = await notion.databases.query({
-      database_id: databaseId,
-      filter: {
-        property: 'Enabled',
-        checkbox: {
-          equals: true
-        }
-      },
-      sorts: [
-        {
-          property: 'Order',
-          direction: 'ascending',
-        },
-      ],
-    });
-
-    const categories = response.results
-      .filter((page): page is PageObjectResponse => 'properties' in page)
-      .map((page) => {
-        const pageProps = page.properties as Record<string, unknown>;
-        return {
-          id: page.id,
-          name: getTitleText(pageProps.Name as TitlePropertyItemObjectResponse),
-          iconName: getRichText(pageProps.IconName as RichTextPropertyItemObjectResponse),
-          order: (pageProps.Order as { number?: number })?.number || 0,
-          enabled: (pageProps.Enabled as { checkbox?: boolean })?.checkbox || false,
-        };
-      });
-
-    return categories.sort((a, b) => a.order - b.order);
-  } catch (err) {
-    console.error('获取分类失败:', err);
-    return [];
-  }
-});
+            const aIsTop = a
