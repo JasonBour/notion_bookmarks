@@ -6,6 +6,7 @@ import Footer from '@/components/layout/Footer';
 import { SimpleTime, AnalogClock, Weather, IPInfo, HotNews } from '@/components/widgets';
 import WidgetsContainer from '@/components/layout/WidgetsContainer';
 import React from 'react';
+export const revalidate = 0;
 
 export const revalidate = 43200; // 12小时重新验证一次
 
