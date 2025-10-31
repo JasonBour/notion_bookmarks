@@ -3,9 +3,11 @@
 import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { ThemeSwitcher } from '@/components/ui/ThemeSwitcher'
-import * as Icons from 'lucide-react'
+import * as Icons from 'lucide-react' // 仍然需要导入 Icons，但仅用于类型检查和回退
 import { WebsiteConfig } from '@/types/notion'
 import { useTheme } from 'next-themes'
+import dynamic from 'next/dynamic' // 引入 next/dynamic
+import React, { ComponentType } from 'react'; // 确保导入 React 和 ComponentType
 
 interface Category {
   id: string
@@ -29,6 +31,44 @@ const defaultConfig: WebsiteConfig = {
   SOCIAL_JIKE: '',
   SOCIAL_WEIBO: ''
 }
+
+// ----------------------------------------------------
+// ✅ 新增：动态图标渲染组件
+// ----------------------------------------------------
+interface IconRendererProps {
+    iconName: string | undefined;
+    className: string;
+}
+
+const IconRenderer: React.FC<IconRendererProps> = ({ iconName, className }) => {
+    // 默认图标：如果没有提供 iconName，或者加载失败，使用 Globe
+    const DefaultIcon = Icons.Globe; 
+
+    if (!iconName) {
+        return <DefaultIcon className={className} />;
+    }
+
+    // 动态导入 Lucide 图标
+    // ⚠️ 修复：将类型参数放宽到 ComponentType<any>，以避免与 Lucide 严格类型定义冲突
+    const LucideIcon = dynamic<ComponentType<any>>(() =>
+        // 尝试从 lucide-react 模块中获取对应名称的组件
+        import('lucide-react').then((mod) => {
+            // 获取组件。这里使用 as ComponentType<any> 确保返回类型兼容
+            const Component = mod[iconName as keyof typeof mod] as ComponentType<any> | undefined;
+            return { default: Component || DefaultIcon }; // 如果找不到，返回默认图标
+        }),
+        { 
+            loading: () => <Icons.Loader className={cn("animate-spin", className)} />, // 加载时的占位符
+            ssr: false // 强制在客户端渲染
+        }
+    );
+
+    // LucideIcon 已经是动态导入的结果，直接渲染
+    // 此时 TypeScript 知道 LucideIcon 可以接受 className prop (因为它现在是 ComponentType<any>)
+    return <LucideIcon className={className} />;
+};
+// ----------------------------------------------------
+
 
 export default function Navigation({ categories, config = defaultConfig }: NavigationProps) {
   const [activeCategory, setActiveCategory] = useState<string>('')
@@ -98,7 +138,7 @@ export default function Navigation({ categories, config = defaultConfig }: Navig
                   className={cn(
                     "whitespace-nowrap px-3 py-1.5 text-sm rounded-full transition-colors shrink-0",
                     activeCategory === category.id
-                      ? theme === 'simple-dark' 
+                      ? theme === 'simple-dark'
                         ? "bg-primary text-primary-foreground font-medium"
                         : "bg-primary text-white font-medium"
                       : theme === 'simple-dark'
@@ -125,9 +165,10 @@ export default function Navigation({ categories, config = defaultConfig }: Navig
         </div>
         <ul className="space-y-1 pb-24">
           {categories.map((category) => {
-            const IconComponent = category.iconName && (category.iconName in Icons)
-              ? (Icons[category.iconName as keyof typeof Icons] as React.ComponentType)
-              : Icons.Globe;
+            // ⚠️ 移除旧的运行时检查和赋值逻辑，改用 IconRenderer 组件
+            // const IconComponent = category.iconName && (category.iconName in Icons)
+            //   ? (Icons[category.iconName as keyof typeof Icons] as React.ComponentType)
+            //   : Icons.Globe;
 
             return (
               <li key={category.id}>
@@ -142,7 +183,8 @@ export default function Navigation({ categories, config = defaultConfig }: Navig
                     )}
                   >
                     <div className="flex items-center space-x-2">
-                      <IconComponent className="w-4 h-4" />
+                      {/* ✅ 替换为新的 IconRenderer 组件 */}
+                      <IconRenderer iconName={category.iconName} className="w-4 h-4" />
                       <span>{category.name}</span>
                     </div>
                     <Icons.ChevronDown
