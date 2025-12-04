@@ -5,7 +5,7 @@ import {
     RichTextPropertyItemObjectResponse,
     FilesPropertyItemObjectResponse
 } from "@notionhq/client/build/src/api-endpoints";
-import { WebsiteConfig } from "@/types/notion";
+import { WebsiteConfig, Link } from "@/types/notion";
 import { cache } from "react";
 import { unstable_noStore as noStore } from 'next/cache'; // 🚀 导入 noStore
 
@@ -190,7 +190,7 @@ export const getSubCategoriesMap = cache(async () => {
 export const getLinks = cache(async () => {
     noStore(); // 🚀 禁用缓存
     const databaseId = envConfig.NOTION_LINKS_DB_ID!;
-    const allLinks = [];
+    const allLinks: Link[] = [];
     let hasMore = true;
     let nextCursor: string | undefined;
 
