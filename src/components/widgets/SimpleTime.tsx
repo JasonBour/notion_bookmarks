@@ -82,23 +82,21 @@ export default function SimpleTime() {
   // 如果未挂载或时间未初始化，返回加载状态
   if (!mounted || !time) {
     return (
-      <div className="flex flex-row items-center justify-center">
-        <div className="widget-card simple-time-widget p-4 rounded-xl border border-border/40 bg-card/80 backdrop-blur-sm shadow-sm w-[280px] h-[150px] flex items-center">
-          <div className="flex items-center w-full">
-            <div className="w-16 h-16 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
-              <div className="bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 text-xs text-center py-0.5">
-                --月
-              </div>
-              <div className="flex-1 flex items-center justify-center">
-                <span className="text-3xl font-bold text-gray-400 dark:text-gray-500">--</span>
-              </div>
+      <div className="widget-card simple-time-widget p-4 rounded-xl border border-border/40 bg-card/80 backdrop-blur-sm shadow-sm w-[280px] h-[150px] flex items-center">
+        <div className="flex items-center w-full">
+          <div className="w-16 h-16 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
+            <div className="bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 text-xs text-center py-0.5">
+              --月
             </div>
-            
-            <div className="ml-3 flex flex-col">
-              <div className="font-medium text-gray-400 dark:text-gray-500">星期-</div>
-              <div className="text-xs text-gray-400 dark:text-gray-500">农历 --月--</div>
-              <div className="text-base font-medium font-mono text-gray-400 dark:text-gray-500 mt-1">--:--:--</div>
+            <div className="flex-1 flex items-center justify-center">
+              <span className="text-3xl font-bold text-gray-400 dark:text-gray-500">--</span>
             </div>
+          </div>
+          
+          <div className="ml-3 flex flex-col">
+            <div className="font-medium text-gray-400 dark:text-gray-500">星期-</div>
+            <div className="text-xs text-gray-400 dark:text-gray-500">农历 --月--</div>
+            <div className="text-base font-medium font-mono text-gray-400 dark:text-gray-500 mt-1">--:--:--</div>
           </div>
         </div>
       </div>
@@ -106,35 +104,33 @@ export default function SimpleTime() {
   }
 
   return (
-    <div className="flex flex-row items-center justify-center">
-      <motion.div 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="widget-card simple-time-widget p-4 bg-card/80 backdrop-blur-sm w-[280px] h-[150px] flex items-center relative overflow-hidden group"
-      >
-        {/* 背景装饰 - 主题感知 */}
-        <div className="absolute inset-0 opacity-10 bg-gradient-to-br from-primary/20 to-transparent pointer-events-none transition-opacity group-hover:opacity-20"></div>
-        
-        <div className="flex items-center relative z-10 w-full">
-          {/* 左侧日历 */}
-          <div className="w-20 h-24   rounded-lg bg-background border border-border/40 flex flex-col overflow-hidden">
-            <div className="bg-red-500 text-white text-sm text-center py-1 font-medium">
-              {month}月
-            </div>
-            <div className="flex-1 flex items-center justify-center">
-              <span className="text-5xl font-bold">{day}</span>
-            </div>
+    <motion.div 
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="widget-card simple-time-widget p-4 bg-card/80 backdrop-blur-sm w-[280px] h-[150px] flex items-center relative overflow-hidden group"
+    >
+      {/* 背景装饰 - 主题感知 */}
+      <div className="absolute inset-0 opacity-10 bg-gradient-to-br from-primary/20 to-transparent pointer-events-none transition-opacity group-hover:opacity-20"></div>
+      
+      <div className="flex items-center relative z-10 w-full">
+        {/* 左侧日历 */}
+        <div className="w-20 h-24   rounded-lg bg-background border border-border/40 flex flex-col overflow-hidden">
+          <div className="bg-red-500 text-white text-sm text-center py-1 font-medium">
+            {month}月
           </div>
-          
-          {/* 右侧信息 */}
-          <div className="ml-3 flex flex-col">
-            <div className="font-medium">星期{weekDay}</div>
-            <div className="text-xs text-muted-foreground">{lunarDate}</div>
-            <div className="text-lg font-medium font-mono text-foreground/90 mt-2">{hours}:{minutes}:{seconds}</div>
+          <div className="flex-1 flex items-center justify-center">
+            <span className="text-5xl font-bold">{day}</span>
           </div>
         </div>
-      </motion.div>
-    </div>
+        
+        {/* 右侧信息 */}
+        <div className="ml-3 flex flex-col">
+          <div className="font-medium">星期{weekDay}</div>
+          <div className="text-xs text-muted-foreground">{lunarDate}</div>
+          <div className="text-lg font-medium font-mono text-foreground/90 mt-2">{hours}:{minutes}:{seconds}</div>
+        </div>
+      </div>
+    </motion.div>
   );
 }

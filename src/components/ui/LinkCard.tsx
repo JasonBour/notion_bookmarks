@@ -1,3 +1,4 @@
+// src/components/ui/LinkCard.tsx
 'use client';
 
 import { Link } from '@/types/notion';
@@ -60,24 +61,27 @@ export default function LinkCard({ link, className }: LinkCardProps) {
   const [imageError, setImageError] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
-  // 预加载图片
+  // 预加载图片（简化版本，确保可靠加载）
   useEffect(() => {
-    if (imageSrc && imgRef.current) {
-      const img = new window.Image();
-      img.src = imageSrc;
-      img.onload = () => {
-        if (imgRef.current) {
-          imgRef.current.src = imageSrc;
-          setImageLoaded(true);
-        }
-      };
-      img.onerror = () => {
-        // 如果图片加载失败，使用默认图标
-        setImageSrc('/globe.svg');
-        setImageError(true);
+    if (!imageSrc || !imgRef.current) return;
+    
+    setImageLoaded(false);
+    setImageError(false);
+    
+    const img = new window.Image();
+    img.src = imageSrc;
+    img.onload = () => {
+      if (imgRef.current) {
+        imgRef.current.src = imageSrc;
         setImageLoaded(true);
-      };
-    }
+      }
+    };
+    img.onerror = () => {
+      // 如果图片加载失败，使用默认图标
+      setImageSrc('/globe.svg');
+      setImageError(true);
+      setImageLoaded(true);
+    };
   }, [imageSrc]);
 
   // 当 link 属性变化时重置图标状态
