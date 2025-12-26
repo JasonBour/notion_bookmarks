@@ -1,11 +1,10 @@
 // src/app/page.tsx
+import Link from 'next/link';
 import LinkContainer from '@/components/layout/LinkContainer';
 import Navigation from '@/components/layout/Navigation';
 import { getLinks, getCategories, getWebsiteConfig } from '@/lib/notion';
 import Footer from '@/components/layout/Footer';
-import { preloadIcons } from '@/lib/iconCache';
-
-import React from 'react';
+import VisitCounter from '@/components/visit-counter/VisitCounter';
 
 // 保持此文件干净，不设置 revalidate。
 // 实时刷新逻辑已在 lib/notion.ts 中通过 noStore() 彻底实现。
@@ -58,6 +57,9 @@ export default async function HomePage() {
 
 	return (
 		<div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+			{/* 访问统计组件 - 不渲染任何内容，只记录访问次数 */}
+			<VisitCounter />
+			
 			{/* 移动端顶部导航 */}
 			<nav className="fixed top-0 left-0 right-0 z-30 bg-white border-b lg:hidden">
 				<Navigation categories={categoriesWithSubs} config={config} />
@@ -74,36 +76,36 @@ export default async function HomePage() {
 						<div className="bg-white p-4 rounded-lg shadow-sm border border-border/40 flex-1">
 							<h2 className="text-lg font-bold mb-2">个人介绍</h2>
 							<div className="space-y-3">
-							<div className="flex items-start">
-								<span className="font-medium text-sm w-24">昵称：</span>
-								<span className="text-sm">Jason</span>
-							</div>
-							<div className="flex items-start">
-								<span className="font-medium text-sm w-24">简介：</span>
-								<div className="space-y-2">
-									<div className="flex flex-wrap gap-2 items-center text-sm text-muted-foreground/90">
-										<span>专注Ai</span>
-										<span className="text-muted-foreground/50">·</span>
-										<span>创业</span>
-										<span className="text-muted-foreground/50">·</span>
-										<span>自媒体</span>
-									</div>
-									<div className="text-sm text-muted-foreground/90 leading-relaxed">
-										7年创业经验 · 自媒体公司创始人 · 做了上百亿的流量 · 操盘过10位以上的商业IP实现了千万营收
+								<div className="flex items-start">
+									<span className="font-medium text-sm w-24">昵称：</span>
+									<span className="text-sm">Jason</span>
+								</div>
+								<div className="flex items-start">
+									<span className="font-medium text-sm w-24">简介：</span>
+									<div className="space-y-2">
+										<div className="flex flex-wrap gap-2 items-center text-sm text-muted-foreground/90">
+											<span>专注Ai</span>
+											<span className="text-muted-foreground/50">·</span>
+											<span>创业</span>
+											<span className="text-muted-foreground/50">·</span>
+											<span>自媒体</span>
+										</div>
+										<div className="text-sm text-muted-foreground/90 leading-relaxed">
+											7年创业经验 · 自媒体公司创始人 · 做了上百亿的流量 · 操盘过10位以上的商业IP实现了千万营收
+										</div>
 									</div>
 								</div>
-							</div>
-							<div className="flex items-start">
-								<span className="font-medium text-sm w-24 whitespace-nowrap">详细了解我：</span>
-								<span className="text-sm">
-									<a href="https://gnsj55l9zt.feishu.cn/wiki/Z7lewA2pXi6ABTk2e52cpr7dnXh?pre_pathname=%2Fdrive%2Fhome%2F" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-										飞书个人主页
-									</a>
-								</span>
+								<div className="flex items-start">
+									<span className="font-medium text-sm w-24 whitespace-nowrap">详细了解我：</span>
+									<span className="text-sm">
+										<a href="https://gnsj55l9zt.feishu.cn/wiki/Z7lewA2pXi6ABTk2e52cpr7dnXh?pre_pathname=%2Fdrive%2Fhome%2F" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+											飞书个人主页
+										</a>
+									</span>
+								</div>
 							</div>
 						</div>
-						</div>
-						
+
 						{/* 右边：二维码 */}
 						<div className="flex gap-4">
 							{/* 微信二维码 */}
@@ -132,8 +134,17 @@ export default async function HomePage() {
 						categories={activeCategories}
 					/>
 				</div>
+				
+				<Footer config={config} className="fixed left-0 right-0 bottom-0 z-30" />
 			</main>
-			<Footer config={config} className="fixed left-0 right-0 bottom-0 z-30" />
+			
+			{/* 固定在右下角的后台管理按钮 */}
+			<Link 
+				className="fixed bottom-6 right-6 bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-600 transition-all duration-300 z-40" 
+				href="/admin"
+			>
+				后台管理
+			</Link>
 		</div>
 	);
 }

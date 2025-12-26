@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitter 帖子编辑器</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- 左侧内容创作区 -->
+        <div class="input-panel">
+            <div class="panel-header">
+                <h2>内容创作</h2>
+            </div>
+            <div id="sourceEditor" contenteditable="true" class="source-editor" data-placeholder="在此粘贴文章或图片，自动排版...">
+            </div>
+        </div>
+
+        <!-- 中间数据编辑区 -->
+        <div class="data-editor-panel">
+            <div class="panel-header">
+                <h2>推文数据管理</h2>
+            </div>
+            <div class="data-editor-content">
+                <div class="edit-row">
+                    <label>推文时间:</label>
+                    <input type="text" id="editPostTime" value="下午12:48 · 2025/11/26" class="data-input">
+                </div>
+                <div class="edit-row">
+                    <label>查看数:</label>
+                    <input type="text" id="editViews" value="11万" class="data-input">
+                </div>
+                <div class="edit-row">
+                    <label>评论数:</label>
+                    <input type="text" id="editComments" value="3" class="data-input">
+                </div>
+                <div class="edit-row">
+                    <label>转发数:</label>
+                    <input type="text" id="editRetweets" value="4" class="data-input">
+                </div>
+                <div class="edit-row">
+                    <label>点赞数:</label>
+                    <input type="text" id="editLikes" value="21" class="data-input">
+                </div>
+                <div class="edit-row">
+                        <label>收藏数:</label>
+                        <input type="text" id="editBookmarks" value="1.3K" class="data-input">
+                    </div>
+                    <!-- 添加每页字数设置 -->
+                    <div class="edit-row">
+                        <label>每页字数:</label>
+                        <input type="number" id="maxChars" value="200" min="50" max="1000" class="data-input">
+                    </div>
+                    <div class="action-row">
+                        <button onclick="updateAllTweetData()" class="update-btn">更新所有推文</button>
+                        <button onclick="generateRandomTweetData()" class="update-btn generate-btn">随机生成数据</button>
+                    </div>
+                    <div class="action-row secondary-actions">
+                        <button onclick="document.getElementById('avatarInput').click()" class="update-btn avatar-btn">更换头像</button>
+                        <button onclick="exportAllImages()" class="update-btn export-btn">导出图片</button>
+                        <button onclick="document.getElementById('sourceEditor').innerHTML=''" class="update-btn clear-btn">清空内容</button>
+                    </div>
+            </div>
+        </div>
+
+        <!-- 右侧预览区 -->
+        <div class="preview-panel" id="previewPanel">
+            <!-- 默认卡片 -->
+            <div class="phone-container" id="card-0">
+                <!-- 顶部状态栏 -->
+                <div class="status-bar">
+                    <div class="time">12:01</div>
+                    <div class="status-icons">
+                        <span class="signal">5G</span>
+                        <span class="battery">4%</span>
+                    </div>
+                </div>
+
+                <!-- 导航栏 -->
+                <div class="nav-bar">
+                    <button class="back-btn">←</button>
+                    <h1 class="page-title">帖子</h1>
+                    <button class="more-btn">⋯</button>
+                </div>
+
+                <!-- 主要内容区 -->
+                <div class="content">
+                    <!-- 用户信息 -->
+                    <div class="user-info">
+                        <div class="avatar-container">
+                            <img src="avatar.jpg" alt="用户头像" class="avatar" id="avatarImg">
+                        </div>
+                        <div class="user-details">
+                            <div class="username-row">
+                                <span class="username" contenteditable="true" id="username">大熊Jason</span>
+                                <svg class="verified" viewBox="0 0 22 22">
+                                    <g>
+                                        <path
+                                            d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z" />
+                                    </g>
+                                </svg>
+                            </div>
+                            <div class="handle" contenteditable="true" id="handle">@JasonCharlie12</div>
+                        </div>
+                        <button class="follow-btn">关注</button>
+                    </div>
+
+                    <!-- 帖子内容 -->
+                    <div class="post-content" contenteditable="true" id="postContent">才知道我学长的企业去年干了三千多万
+
+                        这企业才第三年啊
+
+                        更震惊的是他本科奖学金拿了几十万
+                        做toG的项目又盈利几百万
+
+                        毕业之后去学而思，又一年搞了一百多万
+
+                        23年开始出来创业，第一年就营收千万了
+
+                        前两个月又拿了五千万的政府投资
+
+                        这样的神人太哥
+                        愿意带着我跟人聊三四个小时
+                        让我学到巨多东西😭
+
+                        我真是命太好了。</div>
+
+                    <!-- 帖子元数据 -->
+                    <div class="post-meta">
+                        <span class="post-time" contenteditable="true" id="postTime">下午12:48 · 2025/11/26</span>
+                        <span class="separator">·</span>
+                        <span class="views" contenteditable="true" id="views">11万</span>
+                        <span class="views-text">次查看</span>
+                    </div>
+
+                    <!-- 互动按钮 -->
+                    <div class="interaction-bar">
+                        <div class="interaction-item comment-item">
+                            <svg class="icon comment-icon" viewBox="0 0 24 24">
+                                <path
+                                    d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.96-1.607 5.68-4.196 7.11l-8.054 4.46v-3.69h-.067c-4.49.1-8.183-3.51-8.183-8.01zm8.005-6c-3.317 0-6.005 2.69-6.005 6 0 3.37 2.77 6.08 6.138 6.01l.351-.01h1.761v2.3l5.087-2.81c1.951-1.08 3.163-3.13 3.163-5.36 0-3.39-2.744-6.13-6.129-6.13H9.756z" />
+                            </svg>
+                            <span class="count" contenteditable="true" id="commentCount">3</span>
+                        </div>
+                        <div class="interaction-item retweet-item">
+                            <svg class="icon retweet-icon" viewBox="0 0 24 24">
+                                <path
+                                    d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V8c0-1.1-.896-2-2-2z" />
+                            </svg>
+                            <span class="count" contenteditable="true" id="retweetCount">4</span>
+                        </div>
+                        <div class="interaction-item like-item">
+                            <svg class="icon like-icon" viewBox="0 0 24 24">
+                                <path
+                                    d="M16.697 5.5c-1.222-.06-2.679.51-3.89 2.16l-.805 1.09-.806-1.09C9.984 6.01 8.526 5.44 7.304 5.5c-1.243.07-2.349.78-2.91 1.91-.552 1.12-.633 2.78.479 4.82 1.074 1.97 3.257 4.27 7.129 6.61 3.87-2.34 6.052-4.64 7.126-6.61 1.111-2.04 1.03-3.7.477-4.82-.561-1.13-1.666-1.84-2.908-1.91zm4.187 7.69c-1.351 2.48-4.001 5.12-8.379 7.67l-.503.3-.504-.3c-4.379-2.55-7.029-5.19-8.382-7.67-1.36-2.5-1.41-4.86-.514-6.67.887-1.79 2.647-2.91 4.601-3.01 1.651-.09 3.368.56 4.798 2.01 1.429-1.45 3.146-2.1 4.796-2.01 1.954.1 3.714 1.22 4.601 3.01.896 1.81.846 4.17-.514 6.67z" />
+                            </svg>
+                            <span class="count" contenteditable="true" id="likeCount">21</span>
+                        </div>
+                        <div class="interaction-item bookmark-item">
+                            <svg class="icon bookmark-icon" viewBox="0 0 24 24">
+                                <path
+                                    d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5zM6.5 4c-.276 0-.5.22-.5.5v14.56l6-4.29 6 4.29V4.5c0-.28-.224-.5-.5-.5h-11z" />
+                            </svg>
+                            <span class="count" contenteditable="true" id="bookmarkCount">1.3K</span>
+                        </div>
+                        <div class="interaction-item share-item">
+                            <svg class="icon share-icon" viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2.59l5.7 5.7-1.41 1.42L13 6.41V16h-2V6.41l-3.3 3.3-1.41-1.42L12 2.59zM21 15l-.02 3.51c0 1.38-1.12 2.49-2.5 2.49H5.5C4.11 21 3 19.88 3 18.5V15h2v3.5c0 .28.22.5.5.5h12.98c.28 0 .5-.22.5-.5L19 15h2z" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- 回复输入框 -->
+                    <div class="reply-box">
+                        <input type="text" placeholder="发布你的回复" class="reply-input">
+                    </div>
+                </div>
+
+                <!-- 底部导航 -->
+                <div class="bottom-nav">
+                    <button class="nav-item active">
+                        <svg viewBox="0 0 24 24" class="nav-icon">
+                            <path
+                                d="M12 1.696L.622 8.807l1.06 1.696L3 9.679V19.5C3 20.881 4.119 22 5.5 22h13c1.381 0 2.5-1.119 2.5-2.5V9.679l1.318.824 1.06-1.696L12 1.696zM12 16.5c-1.933 0-3.5-1.567-3.5-3.5s1.567-3.5 3.5-3.5 3.5 1.567 3.5 3.5-1.567 3.5-3.5 3.5z" />
+                        </svg>
+                    </button>
+                    <button class="nav-item">
+                        <svg viewBox="0 0 24 24" class="nav-icon">
+                            <path
+                                d="M10.25 3.75c-3.59 0-6.5 2.91-6.5 6.5s2.91 6.5 6.5 6.5c1.795 0 3.419-.726 4.596-1.904 1.178-1.177 1.904-2.801 1.904-4.596 0-3.59-2.91-6.5-6.5-6.5zm-8.5 6.5c0-4.694 3.806-8.5 8.5-8.5s8.5 3.806 8.5 8.5c0 1.986-.682 3.815-1.824 5.262l4.781 4.781-1.414 1.414-4.781-4.781c-1.447 1.142-3.276 1.824-5.262 1.824-4.694 0-8.5-3.806-8.5-8.5z" />
+                        </svg>
+                    </button>
+                    <button class="nav-item">
+                        <svg viewBox="0 0 24 24" class="nav-icon">
+                            <path
+                                d="M23 3c-6.62-.1-10.38 2.421-13.05 6.03C7.29 12.61 6 17.331 6 22h2c0-1.007.07-2.012.19-3H12c4.1 0 7.48-3.082 7.94-7.054C22.79 10.147 23.17 6.359 23 3zm-7 8h-1.5v2H16c.63-.016 1.2-.08 1.72-.188C16.95 15.24 14.68 17 12 17H8.55c.57-2.512 1.57-4.851 3-6.78 2.16-2.912 5.29-4.911 9.45-5.187C20.95 8.079 19.9 11 16 11zM4 9V6H1V4h3V1h2v3h3v2H6v3H4z" />
+                        </svg>
+                    </button>
+                    <button class="nav-item">
+                        <svg viewBox="0 0 24 24" class="nav-icon">
+                            <path
+                                d="M19.993 9.042C19.48 5.017 16.054 2 11.996 2s-7.49 3.021-7.999 7.051L2.866 18H7.1c.463 2.282 2.481 4 4.9 4s4.437-1.718 4.9-4h4.236l-1.143-8.958zM12 20c-1.306 0-2.417-.835-2.829-2h5.658c-.412 1.165-1.523 2-2.829 2zm-6.866-4l.847-6.698C6.364 6.272 8.941 4 11.996 4s5.627 2.268 6.013 5.295L18.864 16H5.134z" />
+                        </svg>
+                    </button>
+                    <button class="nav-item">
+                        <svg viewBox="0 0 24 24" class="nav-icon">
+                            <path
+                                d="M1.998 5.5c0-1.381 1.119-2.5 2.5-2.5h15c1.381 0 2.5 1.119 2.5 2.5v13c0 1.381-1.119 2.5 2.5 2.5h-15c-1.381 0-2.5-1.119-2.5-2.5v-13zm2.5-.5c-.276 0-.5.224-.5.5v2.764l8 3.638 8-3.636V5.5c0-.276-.224-.5-.5-.5h-15zm15.5 5.463l-8 3.636-8-3.638V18.5c0 .276.224.5.5.5h15c.276 0 .5-.224.5-.5v-8.037z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑控制面板 -->
+    <div class="edit-panel">
+        <h2>编辑控制面板</h2>
+        <div class="edit-section">
+            <button onclick="document.getElementById('avatarInput').click()" class="edit-btn">更换头像</button>
+            <button onclick="exportAllImages()" class="edit-btn">导出所有图片</button>
+            <button onclick="resetContent()" class="edit-btn">重置内容</button>
+        </div>
+        <div class="edit-tips">
+            <p>💡 提示：</p>
+            <ul>
+                <li>左侧粘贴图文，右侧自动排版</li>
+                <li>点击头像可以更换图片</li>
+                <li>所有文字内容都可以直接点击编辑</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 模板 -->
+    <template id="cardTemplate">
+        <div class="phone-container">
+            <!-- 顶部状态栏 -->
+            <div class="status-bar">
+                <div class="time">12:01</div>
+                <div class="status-icons">
+                    <span class="signal">5G</span>
+                    <span class="battery">4%</span>
+                </div>
+            </div>
+
+            <!-- 导航栏 -->
+            <div class="nav-bar">
+                <button class="back-btn">←</button>
+                <h1 class="page-title">帖子</h1>
+                <button class="more-btn">⋯</button>
+            </div>
+
+            <!-- 主要内容区 -->
+            <div class="content">
+                <!-- 用户信息 -->
+                <div class="user-info">
+                    <div class="avatar-container">
+                        <img src="avatar.jpg" alt="用户头像" class="avatar avatarImg">
+                    </div>
+                    <div class="user-details">
+                        <div class="username-row">
+                            <span class="username" contenteditable="true">大熊Jason</span>
+                            <svg class="verified" viewBox="0 0 22 22">
+                                <g>
+                                    <path
+                                        d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z" />
+                                </g>
+                            </svg>
+                        </div>
+                        <div class="handle" contenteditable="true">@JasonCharlie12</div>
+                    </div>
+                    <button class="follow-btn">关注</button>
+                </div>
+
+                <!-- 帖子内容 -->
+                <div class="post-content" contenteditable="true"></div>
+
+                <!-- 帖子元数据 -->
+                <div class="post-meta">
+                    <span class="post-time" contenteditable="true">下午12:48 · 2025/11/26</span>
+                    <span class="separator">·</span>
+                    <span class="views" contenteditable="true">11万</span>
+                    <span class="views-text">次查看</span>
+                </div>
+
+                <!-- 互动按钮 -->
+                <div class="interaction-bar">
+                    <div class="interaction-item comment-item">
+                        <svg class="icon comment-icon" viewBox="0 0 24 24">
+                            <path
+                                d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.96-1.607 5.68-4.196 7.11l-8.054 4.46v-3.69h-.067c-4.49.1-8.183-3.51-8.183-8.01zm8.005-6c-3.317 0-6.005 2.69-6.005 6 0 3.37 2.77 6.08 6.138 6.01l.351-.01h1.761v2.3l5.087-2.81c1.951-1.08 3.163-3.13 3.163-5.36 0-3.39-2.744-6.13-6.129-6.13H9.756z" />
+                        </svg>
+                        <span class="count" contenteditable="true">3</span>
+                    </div>
+                    <div class="interaction-item retweet-item">
+                        <svg class="icon retweet-icon" viewBox="0 0 24 24">
+                            <path
+                                d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V8c0-1.1-.896-2-2-2z" />
+                        </svg>
+                        <span class="count" contenteditable="true">4</span>
+                    </div>
+                    <div class="interaction-item like-item">
+                        <svg class="icon like-icon" viewBox="0 0 24 24">
+                            <path
+                                d="M16.697 5.5c-1.222-.06-2.679.51-3.89 2.16l-.805 1.09-.806-1.09C9.984 6.01 8.526 5.44 7.304 5.5c-1.243.07-2.349.78-2.91 1.91-.552 1.12-.633 2.78.479 4.82 1.074 1.97 3.257 4.27 7.129 6.61 3.87-2.34 6.052-4.64 7.126-6.61 1.111-2.04 1.03-3.7.477-4.82-.561-1.13-1.666-1.84-2.908-1.91zm4.187 7.69c-1.351 2.48-4.001 5.12-8.379 7.67l-.503.3-.504-.3c-4.379-2.55-7.029-5.19-8.382-7.67-1.36-2.5-1.41-4.86-.514-6.67.887-1.79 2.647-2.91 4.601-3.01 1.651-.09 3.368.56 4.798 2.01 1.429-1.45 3.146-2.1 4.796-2.01 1.954.1 3.714 1.22 4.601 3.01.896 1.81.846 4.17-.514 6.67z" />
+                        </svg>
+                        <span class="count" contenteditable="true">21</span>
+                    </div>
+                    <div class="interaction-item bookmark-item">
+                        <svg class="icon bookmark-icon" viewBox="0 0 24 24">
+                            <path
+                                d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5zM6.5 4c-.276 0-.5.22-.5.5v14.56l6-4.29 6 4.29V4.5c0-.28-.224-.5-.5-.5h-11z" />
+                        </svg>
+                        <span class="count" contenteditable="true">1.3K</span>
+                    </div>
+                    <div class="interaction-item share-item">
+                        <svg class="icon share-icon" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2.59l5.7 5.7-1.41 1.42L13 6.41V16h-2V6.41l-3.3 3.3-1.41-1.42L12 2.59zM21 15l-.02 3.51c0 1.38-1.12 2.49-2.5 2.49H5.5C4.11 21 3 19.88 3 18.5V15h2v3.5c0 .28.22.5.5.5h12.98c.28 0 .5-.22.5-.5L19 15h2z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- 回复输入框 -->
+                <div class="reply-box">
+                    <input type="text" placeholder="发布你的回复" class="reply-input">
+                </div>
+            </div>
+
+            <!-- 底部导航 -->
+            <div class="bottom-nav">
+                <button class="nav-item active">
+                    <svg viewBox="0 0 24 24" class="nav-icon">
+                        <path
+                            d="M12 1.696L.622 8.807l1.06 1.696L3 9.679V19.5C3 20.881 4.119 22 5.5 22h13c1.381 0 2.5-1.119 2.5-2.5V9.679l1.318.824 1.06-1.696L12 1.696zM12 16.5c-1.933 0-3.5-1.567-3.5-3.5s1.567-3.5 3.5-3.5 3.5 1.567 3.5 3.5-1.567 3.5-3.5 3.5z" />
+                    </svg>
+                </button>
+                <button class="nav-item">
+                    <svg viewBox="0 0 24 24" class="nav-icon">
+                        <path
+                            d="M10.25 3.75c-3.59 0-6.5 2.91-6.5 6.5s2.91 6.5 6.5 6.5c1.795 0 3.419-.726 4.596-1.904 1.178-1.177 1.904-2.801 1.904-4.596 0-3.59-2.91-6.5-6.5-6.5zm-8.5 6.5c0-4.694 3.806-8.5 8.5-8.5s8.5 3.806 8.5 8.5c0 1.986-.682 3.815-1.824 5.262l4.781 4.781-1.414 1.414-4.781-4.781c-1.447 1.142-3.276 1.824-5.262 1.824-4.694 0-8.5-3.806-8.5-8.5z" />
+                    </svg>
+                </button>
+                <button class="nav-item">
+                    <svg viewBox="0 0 24 24" class="nav-icon">
+                        <path
+                            d="M23 3c-6.62-.1-10.38 2.421-13.05 6.03C7.29 12.61 6 17.331 6 22h2c0-1.007.07-2.012.19-3H12c4.1 0 7.48-3.082 7.94-7.054C22.79 10.147 23.17 6.359 23 3zm-7 8h-1.5v2H16c.63-.016 1.2-.08 1.72-.188C16.95 15.24 14.68 17 12 17H8.55c.57-2.512 1.57-4.851 3-6.78 2.16-2.912 5.29-4.911 9.45-5.187C20.95 8.079 19.9 11 16 11zM4 9V6H1V4h3V1h2v3h3v2H6v3H4z" />
+                    </svg>
+                </button>
+                <button class="nav-item">
+                    <svg viewBox="0 0 24 24" class="nav-icon">
+                        <path
+                            d="M19.993 9.042C19.48 5.017 16.054 2 11.996 2s-7.49 3.021-7.999 7.051L2.866 18H7.1c.463 2.282 2.481 4 4.9 4s4.437-1.718 4.9-4h4.236l-1.143-8.958zM12 20c-1.306 0-2.417-.835-2.829-2h5.658c-.412 1.165-1.523 2-2.829 2zm-6.866-4l.847-6.698C6.364 6.272 8.941 4 11.996 4s5.627 2.268 6.013 5.295L18.864 16H5.134z" />
+                    </svg>
+                </button>
+                <button class="nav-item">
+                    <svg viewBox="0 0 24 24" class="nav-icon">
+                        <path
+                            d="M1.998 5.5c0-1.381 1.119-2.5 2.5-2.5h15c1.381 0 2.5 1.119 2.5 2.5v13c0 1.381-1.119 2.5 2.5 2.5h-15c-1.381 0-2.5-1.119-2.5-2.5v-13zm2.5-.5c-.276 0-.5.224-.5.5v2.764l8 3.638 8-3.636V5.5c0-.276-.224-.5-.5-.5h-15zm15.5 5.463l-8 3.636-8-3.638V18.5c0 .276.224.5.5.5h15c.276 0 .5-.224.5-.5v-8.037z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        </div>
+    </template>
+
+    <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+    <script src="script.js"></script>
+</body>
+
+</html>
