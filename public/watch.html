@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>美股盯盘 · 策略价位看板</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#181b22; --panel2:#1f232d; --border:#2a2f3a;
+    --text:#e8eaf0; --muted:#8b93a3; --accent:#4f8cff;
+    --up:#ff5252; --down:#26a69a; --warn:#e6c229;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--text); font-family:-apple-system,"Segoe UI","Microsoft YaHei",system-ui,sans-serif; padding:20px; font-size:14px;}
+  header{display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-bottom:16px;}
+  h1{font-size:18px; margin-right:auto;}
+  h1 small{color:var(--muted); font-weight:400; font-size:12px; margin-left:8px;}
+  .toolbar{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+  select,input,button,textarea{background:var(--panel2); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-size:13px; outline:none;}
+  button{cursor:pointer;} button:hover{border-color:var(--accent);}
+  button.primary{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .status{font-size:12px; color:var(--muted);}
+  .status.ok{color:#4ade80;} .status.bad{color:var(--up);}
+  #alerts{margin-bottom:12px; display:flex; flex-direction:column; gap:6px;}
+  .alert{background:linear-gradient(90deg,#3a1d1d,#241a2a); border:1px solid #7a3b3b; border-radius:8px; padding:10px 14px; cursor:pointer; animation:pop .3s;}
+  @keyframes pop{from{transform:translateY(-6px); opacity:0;} to{transform:none; opacity:1;}}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(460px,1fr)); gap:16px;}
+  @media(max-width:520px){.grid{grid-template-columns:1fr;}}
+  .card{background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:16px;}
+  .card-head{display:flex; align-items:baseline; gap:10px; margin-bottom:6px;}
+  .sym{font-size:20px; font-weight:700; letter-spacing:.5px;}
+  .cname{color:var(--muted); font-size:12px;}
+  .head-right{margin-left:auto; display:flex; gap:6px; align-items:center;}
+  .icon-btn{background:none; border:none; color:var(--muted); font-size:14px; padding:2px 6px;}
+  .price-row{display:flex; align-items:baseline; gap:14px; margin:6px 0 2px;}
+  .price{font-size:34px; font-weight:700; font-variant-numeric:tabular-nums;}
+  .chg{font-size:16px; font-weight:600;}
+  .up{color:var(--up);} .down{color:var(--down);} .flat{color:var(--muted);}
+  .meta-line{font-size:12px; color:var(--muted); margin-bottom:10px;}
+  .earn-line{font-size:12px; color:#9fb4d8; margin:-4px 0 10px 0;}
+  .chips{display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 12px;}
+  .chip{font-size:12px; padding:3px 9px; border-radius:99px; border:1px solid var(--border); color:var(--muted); font-variant-numeric:tabular-nums;}
+  .chip.hit{border-color:var(--up); color:var(--up); background:rgba(255,82,82,.08);}
+  .ladder{position:relative; height:260px; margin:4px 4px 10px 4px; border-left:1px solid var(--border); border-bottom:1px solid var(--border);}
+  .zone{position:absolute; left:0; right:0; display:flex; align-items:center;}
+  .zone .zlabel{font-size:11px; padding:1px 7px; border-radius:4px; margin-left:4px; color:#0d0f13; font-weight:600; white-space:nowrap;}
+  .level{position:absolute; left:0; right:0; border-top:1px dashed #6b7385;}
+  .level .lv-chip{position:absolute; right:0; transform:translateY(-50%); top:0; background:var(--panel2); border:1px solid var(--border); border-radius:4px; font-size:11px; padding:2px 7px; color:var(--text); font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .pricemark{position:absolute; left:0; right:0; border-top:2px solid var(--accent); z-index:5;}
+  .pricemark .p-tag{position:absolute; right:0; top:0; transform:translateY(-50%); background:var(--accent); color:#fff; font-size:12px; font-weight:700; padding:2px 9px; border-radius:4px; font-variant-numeric:tabular-nums;}
+  .notes{font-size:13px; color:#c7cdd9; background:var(--panel2); border-left:3px solid var(--accent); padding:8px 12px; border-radius:0 6px 6px 0; line-height:1.7;}
+  .strategy{font-size:14px; font-weight:600; color:#ffd9a0; background:rgba(230,162,60,.10); border:1px solid rgba(230,162,60,.35); padding:9px 12px; border-radius:8px; line-height:1.7; margin-bottom:10px;}
+  .s-tag{display:inline-block; font-size:11px; font-weight:700; color:#1a1205; background:#e6a23c; border-radius:4px; padding:1px 7px; margin-right:8px; vertical-align:1px;}
+  .edit-panel{margin-top:12px; border-top:1px dashed var(--border); padding-top:12px; display:none;}
+  .edit-panel.open{display:block;}
+  .edit-panel h4{font-size:13px; color:var(--muted); margin:10px 0 6px;}
+  .row{display:flex; gap:6px; margin-bottom:6px; flex-wrap:wrap; align-items:center;}
+  .row input{width:90px;} .row input.wide{width:120px;} .row input.note{flex:1; min-width:200px;}
+  .row input[type=color]{padding:0; width:36px; height:30px;}
+  .del{color:var(--up); background:none; border:none; cursor:pointer; font-size:14px;}
+  footer{margin-top:24px; font-size:11px; color:var(--muted); line-height:1.7;}
+  .legend{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:12px 14px; margin-bottom:14px;}
+  .lg-row{display:flex; gap:8px; flex-wrap:wrap;}
+  .lg-cell{flex:1; min-width:130px; background:var(--panel2); border-radius:8px; padding:8px 10px; font-size:12px; line-height:1.6;}
+  .lg-act{font-weight:700;}
+  .lg-pct{margin-top:8px; font-size:12px; color:var(--muted); line-height:1.7;}
+  .empty-price{color:var(--muted); font-size:20px; font-weight:400;}
+  .manual-input{width:130px !important; font-size:16px;}
+  .badge{font-size:11px; padding:2px 8px; border-radius:4px; background:var(--panel2); border:1px solid var(--border); color:var(--muted);}
+  .badge.open{color:#4ade80; border-color:#2c5c3a;}
+  .badge.earn{border-color:#3b4250;}
+  .badge.earn.warn{color:var(--warn); border-color:#5c502c;}
+  .badge.earn.soon{color:var(--up); border-color:#7a3b3b; background:rgba(255,82,82,.10);}
+  /* ===== 访问口令闸门（仅线上模式） ===== */
+  .gate{position:fixed; inset:0; background:var(--bg); z-index:99; display:flex; align-items:center; justify-content:center; padding:20px;}
+  .gate-box{background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:26px 24px; width:100%; max-width:350px;}
+  .gate-box h2{font-size:17px; margin-bottom:6px;}
+  .gate-box p{font-size:12px; color:var(--muted); margin-bottom:16px; line-height:1.65;}
+  .gate-box input{width:100%; padding:10px 12px; font-size:15px; margin-bottom:10px;}
+  .gate-box button{width:100%; padding:10px; font-size:14px;}
+  .gate-err{color:var(--up); font-size:12px; margin-bottom:8px; min-height:17px;}
+  /* ===== 服务器策略更新提示 ===== */
+  .version-bar{background:rgba(79,140,255,.10); border:1px solid rgba(79,140,255,.45); border-radius:8px; padding:9px 12px; font-size:12.5px; margin-bottom:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; line-height:1.6;}
+  .version-bar button{padding:4px 10px; font-size:12px;}
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+<div class="gate hidden" id="gate">
+  <div class="gate-box">
+    <h2>🔒 美股盯盘 · 策略看板</h2>
+    <p>这是私密页面，输入访问口令继续。</p>
+    <form id="gateForm" autocomplete="off">
+      <div class="gate-err" id="gateErr"></div>
+      <input type="password" id="gateInput" placeholder="访问口令" autofocus>
+      <button class="primary" type="submit" id="gateBtn">进入</button>
+    </form>
+  </div>
+</div>
+<header>
+  <h1>📈 美股盯盘 · 策略价位看板<small>连接中…</small></h1>
+  <div class="toolbar">
+    <span class="status" id="dataStatus">待刷新</span>
+    <select id="intervalSel">
+      <option value="0">手动</option>
+      <option value="30">30秒</option>
+      <option value="60">1分钟</option>
+      <option value="120">2分钟</option>
+      <option value="300">5分钟</option>
+      <option value="600">10分钟</option>
+      <option value="1800">30分钟</option>
+      <option value="3600">1小时</option>
+    </select>
+    <button class="primary" id="refreshBtn">立即刷新</button>
+    <button id="apiBtn">⚙ 数据源</button>
+    <input id="addSym" placeholder="加股票代码 如 TSLA" style="width:170px" onkeydown="if(event.key==='Enter')addStock()">
+    <button onclick="addStock()">＋添加</button>
+  </div>
+</header>
+<div class="legend">
+  <div class="lg-row">
+    <div class="lg-cell" style="border-top:3px solid #e04040"><b>A 红</b><br>风险：极低<br><span class="lg-act" style="color:#ff5252">strong buy</span></div>
+    <div class="lg-cell" style="border-top:3px solid #e6c229"><b>B 黄</b><br>风险：低<br><span class="lg-act" style="color:#e6c229">buy</span></div>
+    <div class="lg-cell" style="border-top:3px solid #3b82f6"><b>C 蓝</b><br>风险：中<br><span class="lg-act" style="color:#4f8cff">opening position 试仓</span></div>
+    <div class="lg-cell" style="border-top:3px solid #22c55e"><b>D 绿</b><br>风险：中上<br><span class="lg-act" style="color:#22c55e">sell</span></div>
+    <div class="lg-cell" style="border-top:3px solid #8b5cf6"><b>E 紫</b><br>风险：高<br><span class="lg-act" style="color:#8b5cf6">strong sell</span></div>
+  </div>
+  <div class="lg-pct">
+    占位：A2 买35% · A1 买20% · B2 买5% · B1 买15% · C2 试仓5% · C1 试仓10% · D3 卖15% · D2 卖10% · D1 卖5% · E2 卖20% · E1 卖40%
+    ｜ 低于 A1 留 10% 现金 · 高于 E2 留 10%
+  </div>
+  <div class="lg-pct" style="color:#ffd9a0">📅 盘面提醒（9/22 开盘前更新）：24 号前暂时看好震荡升高，短期行情只能看到这么远——这时期上下会很频繁，小心 2 倍杠杆和被套，不要追高，永远有机会。</div>
+</div>
+<div id="apiPanel" style="display:none; background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:14px 16px; margin-bottom:14px;">
+  <b style="font-size:13px">数据源设置</b>
+  <div class="row" style="margin-top:10px">
+    <span style="color:var(--muted);font-size:12px">行情接口：</span>
+    <select id="srcSel" style="width:auto">
+      <option value="yahoo">Yahoo（免 key，可能有延迟/被拦）</option>
+      <option value="finnhub">Finnhub（免费 key，美股实时）</option>
+      <option value="twelvedata">Twelve Data（免费 key，800次/天）</option>
+    </select>
+    <input id="keyInput" class="wide" placeholder="粘贴 API Key" style="width:260px">
+    <button class="primary" id="saveApiBtn">保存并刷新</button>
+  </div>
+  <div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.7">
+    · Finnhub 免费注册即有 key：<a href="https://finnhub.io/register" target="_blank" style="color:var(--accent)">finnhub.io/register</a>，免费档 60 次/分钟，美股实时报价，15 秒刷一次绰绰有余<br>
+    · Twelve Data：<a href="https://twelvedata.com/" target="_blank" style="color:var(--accent)">twelvedata.com</a>，免费 800 次/天<br>
+    · Key 只存你浏览器本地；也可以直接把 key 写进同目录的 apikey.txt（finnhub=你的key），刷新页面自动读取
+  </div>
+</div>
+<div id="versionBar" class="version-bar hidden"></div>
+<div id="alerts"></div>
+<div class="grid" id="grid"></div>
+<footer>
+  · 行情由服务端代理抓取（Finnhub → 腾讯 → Yahoo 三级降级），可能有数秒延迟；全部失败可在卡片里手动填价。<br>
+  · 策略配置的真源在服务端（本地 strategy.json / 线上 api/watch）；你在页面上点 ✎ 的改动只存在当前浏览器。<br>
+  · 免责声明：本页面仅为个人盯盘辅助工具，不构成投资建议。市场有风险，投资需谨慎。
+</footer>
+
+<script>
+"use strict";
+/* ================= 运行模式 ================= */
+// 本地打开（localhost / 局域网 IP / 直接双击）→ 走 watch-server.js
+// 线上部署（Vercel 等）→ 走 /api/watch，需访问口令，key 只存在服务端
+var HOSTED = !(
+  location.hostname === "" || location.hostname === "localhost" ||
+  location.hostname === "127.0.0.1" || location.hostname === "0.0.0.0" ||
+  location.hostname === "[::1]" || location.hostname === "::1" ||
+  /^192\.168\./.test(location.hostname) || /^10\./.test(location.hostname) ||
+  /^172\.(1[6-9]|2\d|3[01])\./.test(location.hostname)
+);
+var STORE_KEY = "watch_strategy_v3";   // 浏览器本地的策略改动缓存
+var TOKEN_KEY = "watch_token_v1";
+
+function getToken() { try { return sessionStorage.getItem(TOKEN_KEY) || localStorage.getItem(TOKEN_KEY) || ""; } catch (e) { return ""; } }
+function setToken(t) { try { sessionStorage.setItem(TOKEN_KEY, t); localStorage.setItem(TOKEN_KEY, t); } catch (e) {} }
+function clearToken() { try { sessionStorage.removeItem(TOKEN_KEY); localStorage.removeItem(TOKEN_KEY); } catch (e) {} }
+function authHeaders() { return HOSTED ? { "x-watch-token": getToken() } : {}; }
+
+/* 策略配置的真源在服务端（本地 strategy.json / 线上 /api/watch）。
+   这里只是空骨架，避免配置没到位时代码报错。 */
+var DEFAULTS = { version: 0, interval: 60, dataSource: "yahoo", apiKey: "", stocks: [] };
+var serverConfig = null;   // 服务器版本更高时挂在这，顶部出提示条
+var appReady = false;
+
+/* ================= 状态 ================= */
+var state = readLocal();
+var quotes = {};        // symbol -> {price, prevClose, chg, pre, post, marketState, time, src}
+var prevPrices = {};    // 用于穿越检测
+var manualPrices = {};  // symbol -> 手动价格（不持久化，本次会话有效）
+var refreshTimer = null;
+var firstLoad = true;
+
+function readLocal(){
+  var s = null;
+  try{
+    var raw = localStorage.getItem(STORE_KEY);
+    if(raw){ s = JSON.parse(raw); }
+  }catch(e){}
+  if(!s || !s.stocks){ s = JSON.parse(JSON.stringify(DEFAULTS)); }
+  return s;
+}
+
+/* 把服务端策略并进来：只补缺失的股票和字段，不覆盖你手动改过的内容。
+   如果服务端版本更高，挂到 serverConfig，由顶部提示条让你决定是否覆盖。 */
+function mergeServerConfig(s, cfg){
+  if(!cfg || !cfg.stocks) return;
+  cfg.stocks.forEach(function(d){
+    var cur = null;
+    for(var i = 0; i < s.stocks.length; i++){ if(s.stocks[i].symbol === d.symbol) cur = s.stocks[i]; }
+    if(!cur){ s.stocks.push(JSON.parse(JSON.stringify(d))); }
+    else {
+      if(!cur.earnings) cur.earnings = d.earnings;
+      if(!cur.earningsNote) cur.earningsNote = d.earningsNote;
+    }
+  });
+  if(cfg.version > (s.version || 0)){ serverConfig = cfg; }
+  else if(!s.version){ s.version = cfg.version; }
+  if(!s.interval) s.interval = cfg.interval || 60;
+}
+function saveState(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){}
+}
+
+/* ================= 行情抓取 ================= */
+function fetchJSON(url, timeout, headers){
+  return new Promise(function(resolve, reject){
+    var ctrl = new AbortController();
+    var t = setTimeout(function(){ ctrl.abort(); reject(new Error("timeout")); }, timeout || 8000);
+    fetch(url, { signal: ctrl.signal, headers: headers || undefined, cache: "no-store" })
+      .then(function(r){
+        if(r.status === 401 || r.status === 403){ var e = new Error("unauthorized"); e.status = 401; throw e; }
+        if(!r.ok) throw new Error("http " + r.status);
+        return r.json();
+      })
+      .then(function(d){ clearTimeout(t); resolve(d); })
+      .catch(function(e){ clearTimeout(t); reject(e); });
+  });
+}
+
+function fetchQuote(sym){
+  if(HOSTED){
+    // 线上：服务端代理（key 不下发到浏览器）；服务端挂了再退回浏览器直连 Yahoo
+    return fetchQuoteServer(sym).catch(function(e){
+      if(e && e.status === 401) throw e;
+      return fetchQuoteRemote(sym);
+    });
+  }
+  // 本地：watch-server.js 代理优先，失败再走浏览器直连链
+  return fetchQuoteLocal(sym).catch(function(){ return fetchQuoteRemote(sym); });
+}
+function fetchQuoteServer(sym){
+  return fetchJSON("/api/watch?mode=quote&sym=" + encodeURIComponent(sym), 10000, authHeaders()).then(function(d){
+    if(d && d.price != null){
+      return { price: d.price, prevClose: d.prevClose, pre: d.pre, post: d.post, time: Date.now(), src: d.src || "server" };
+    }
+    throw new Error((d && d.error) || "服务端无数据");
+  });
+}
+function fetchQuoteLocal(sym){
+  return fetchJSON("/quote?sym=" + encodeURIComponent(sym)).then(function(d){
+    if(d && d.price != null){
+      return { price: d.price, prevClose: d.prevClose, pre: d.pre, post: d.post, time: Date.now(), src: "yahoo" };
+    }
+    throw new Error("proxy no data");
+  });
+}
+function fetchQuoteRemote(sym){
+  // —— Finnhub（免费 key，美股实时，CORS 友好）——
+  if(state.dataSource === "finnhub" && state.apiKey){
+    var fu = "https://finnhub.io/api/v1/quote?symbol=" + encodeURIComponent(sym) + "&token=" + encodeURIComponent(state.apiKey);
+    return fetchJSON(fu).then(function(d){
+      if(d && typeof d.c === "number" && d.c > 0 && d.pc){
+        return { price: d.c, prevClose: d.pc, pre: null, post: null, time: Date.now(), src: "finnhub" };
+      }
+      throw new Error(d && d.error ? d.error : "finnhub 无数据");
+    });
+  }
+  // —— Twelve Data（免费 key，800 次/天）——
+  if(state.dataSource === "twelvedata" && state.apiKey){
+    var tu = "https://api.twelvedata.com/quote?symbol=" + encodeURIComponent(sym) + "&apikey=" + encodeURIComponent(state.apiKey);
+    return fetchJSON(tu).then(function(d){
+      if(d && d.close){
+        return { price: parseFloat(d.close), prevClose: parseFloat(d.previous_close), pre: null, post: null, time: Date.now(), src: "twelvedata" };
+      }
+      throw new Error(d && d.message ? d.message : "twelvedata 无数据");
+    });
+  }
+  // —— Yahoo 兜底链 ——
+  var target = "https://query1.finance.yahoo.com/v8/finance/chart/" + encodeURIComponent(sym) + "?interval=1d&range=1d";
+  var target2 = "https://query2.finance.yahoo.com/v8/finance/chart/" + encodeURIComponent(sym) + "?interval=1d&range=1d";
+  var viaProxy1 = "https://corsproxy.io/?url=" + encodeURIComponent(target);
+  var viaProxy2 = "https://api.allorigins.win/raw?url=" + encodeURIComponent(target);
+  var chain = [fetchJSON(target), fetchJSON(target2), fetchJSON(viaProxy1), fetchJSON(viaProxy2)];
+  return chain.reduce(function(p, next){
+    return p.catch(function(){ return next; });
+  }, Promise.reject()).then(function(data){
+    var m = data.chart.result[0].meta;
+    return {
+      price: m.regularMarketPrice,
+      prevClose: (m.previousClose != null ? m.previousClose : m.chartPreviousClose),
+      pre: m.preMarketPrice != null ? m.preMarketPrice : null,
+      post: m.postMarketPrice != null ? m.postMarketPrice : null,
+      time: Date.now(),
+      src: "yahoo"
+    };
+  });
+}
+
+function computePrice(sym){
+  var q = quotes[sym];
+  var mp = manualPrices[sym];
+  if(q && q.price != null) return { price: q.price, prevClose: q.prevClose, live: true };
+  if(mp != null) return { price: mp, prevClose: mp, live: false };
+  return null;
+}
+
+/* ================= 市场状态（美东） ================= */
+function marketStatus(){
+  try{
+    var parts = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", weekday:"short", hour:"numeric", minute:"numeric", hour12:false }).formatToParts(new Date());
+    var get = function(t){ var p = parts.find(function(x){ return x.type===t; }); return p ? p.value : ""; };
+    var wd = get("weekday");
+    var h = parseInt(get("hour"),10), m = parseInt(get("minute"),10);
+    var mins = h*60 + m;
+    if(wd==="Sat" || wd==="Sun") return { label:"休市（周末）", open:false };
+    if(mins >= 570 && mins < 960) return { label:"盘中", open:true };
+    if(mins >= 240 && mins < 570) return { label:"盘前", open:false };
+    if(mins >= 960 && mins < 1200) return { label:"盘后", open:false };
+    return { label:"休市", open:false };
+  }catch(e){ return { label:"", open:false }; }
+}
+
+/* ================= 渲染 ================= */
+function esc(s){
+  return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function renderAll(){
+  var grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  state.stocks.forEach(function(st){
+    grid.appendChild(buildCard(st));
+  });
+}
+
+function buildCard(st){
+  var card = document.createElement("div");
+  card.className = "card";
+  card.dataset.symbol = st.symbol;
+
+  var p = computePrice(st.symbol);
+  var q = quotes[st.symbol];
+  var chgCls = "flat", chgTxt = "--";
+  var liveTag = "";
+  if(p && p.prevClose){
+    var chg = (p.price - p.prevClose) / p.prevClose * 100;
+    chgCls = chg > 0.005 ? "up" : (chg < -0.005 ? "down" : "flat");
+    chgTxt = (chg > 0 ? "+" : "") + chg.toFixed(2) + "%  (" + (p.price - p.prevClose > 0 ? "+" : "") + (p.price - p.prevClose).toFixed(2) + ")";
+  }
+  if(p && !p.live) liveTag = '<span class="badge" style="color:var(--warn);border-color:#5c502c">手动价</span>';
+
+  var ms = marketStatus();
+  var extra = "";
+  if(q && q.pre != null) extra += " 盘前 " + q.pre.toFixed(2);
+  if(q && q.post != null) extra += " 盘后 " + q.post.toFixed(2);
+  var updateTime = q ? new Date(q.time).toLocaleTimeString("zh-CN", {hour12:false}) : "--";
+
+  var priceHtml = p
+    ? '<span class="price ' + chgCls + '">' + p.price.toFixed(2) + "</span>"
+    : '<span class="empty-price">获取失败 → 点 ✎ 手动填价</span>';
+
+  var html = '' +
+    '<div class="card-head">' +
+      '<span class="sym">' + esc(st.symbol) + "</span>" +
+      '<span class="cname">' + esc(st.name || "") + "</span>" +
+      '<span class="badge ' + (ms.open ? "open" : "") + '">' + esc(ms.label) + "</span>" +
+      earningsBadge(st) +
+      '<span class="head-right">' +
+        liveTag +
+        '<button class="icon-btn" onclick="toggleEdit(\'' + esc(st.symbol) + '\')" title="编辑策略">✎</button>' +
+        '<button class="icon-btn" onclick="removeStock(\'' + esc(st.symbol) + '\')" title="删除">🗑</button>' +
+      "</span>" +
+    "</div>" +
+    '<div class="price-row">' + priceHtml +
+      '<span class="chg ' + chgCls + '">' + chgTxt + "</span>" +
+    "</div>" +
+    '<div class="meta-line">更新 ' + updateTime + " · " + (q ? (q.src === "finnhub" ? "Finnhub" : q.src === "twelvedata" ? "Twelve Data" : "Yahoo") : (p ? "手动" : "无数据")) + extra + "</div>" +
+    (st.earningsNote ? '<div class="earn-line">📅 ' + esc(st.earningsNote) + "</div>" : "") +
+    (st.notes ? '<div class="strategy"><span class="s-tag">近期策略</span>' + esc(st.notes) + "</div>" : "") +
+    ladderHtml(st) +
+    editPanelHtml(st);
+
+  card.innerHTML = html;
+  return card;
+}
+
+/* A-E 系统的每档操作占比 */
+var LEVEL_ACTIONS = {
+  "A2": "买35%", "A1": "买20%",
+  "B2": "买5%",  "B1": "买15%",
+  "C2": "试仓5%", "C1": "试仓10%",
+  "D3": "卖15%", "D2": "卖10%", "D1": "卖5%",
+  "E2": "卖20%", "E1": "卖40%"
+};
+var ZONE_META = {
+  "A": "strong buy", "B": "buy", "C": "试仓", "D": "sell", "E": "strong sell"
+};
+function levelAction(label){
+  var key = String(label).trim().toUpperCase();
+  return LEVEL_ACTIONS[key] || "";
+}
+function zoneAction(name){
+  var letter = String(name).trim().charAt(0).toUpperCase();
+  return ZONE_META[letter] || "";
+}
+
+/* 财报倒计时标记 */
+function earningsBadge(st){
+  if(!st.earnings) return "";
+  var d = new Date(st.earnings + "T00:00:00");
+  if(isNaN(d.getTime())) return "";
+  var now = new Date(); now.setHours(0,0,0,0);
+  var days = Math.round((d.getTime() - now.getTime()) / 86400000);
+  var label = (d.getMonth() + 1) + "/" + d.getDate();
+  var cls = days <= 3 ? "soon" : (days <= 7 ? "warn" : "");
+  var txt = days > 0 ? ("剩 " + days + " 天") : (days === 0 ? "今天" : "已过");
+  return '<span class="badge earn ' + cls + '">📅 财报 ' + label + " · " + txt + "</span>";
+}
+
+function ladderHtml(st){
+  var p = computePrice(st.symbol);
+  var vals = [];
+  st.levels.forEach(function(l){ vals.push(l.price); });
+  st.zones.forEach(function(z){ vals.push(z.from, z.to); });
+  if(p) vals.push(p.price);
+  if(!vals.length) return "";
+  var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+  var pad = (hi - lo) * 0.06 || 1;
+  lo -= pad; hi += pad;
+  var pct = function(v){ return ((v - lo) / (hi - lo) * 100).toFixed(2); };
+
+  var h = '<div class="ladder">';
+  // 分区色带
+  st.zones.forEach(function(z){
+    var top = pct(Math.max(z.from, z.to)), bot = pct(Math.min(z.from, z.to));
+    var height = Math.abs(parseFloat(top) - parseFloat(bot));
+    if(height < 1.2) height = 1.2;
+    var zAct = zoneAction(z.name);
+    h += '<div class="zone" style="bottom:' + bot + "%; height:" + height + '%;">' +
+           '<span class="zlabel" style="background:' + z.color + '">' + esc(z.name) + " " + z.from + "-" + z.to + (zAct ? " · " + esc(zAct) : "") + "</span>" +
+         "</div>";
+  });
+  // 价位线
+  st.levels.forEach(function(lv){
+    var act = levelAction(lv.label);
+    h += '<div class="level" style="bottom:' + pct(lv.price) + '%;">' +
+           '<span class="lv-chip">' + esc(lv.label) + " · " + lv.price + (act ? " · " + esc(act) : "") + "</span>" +
+         "</div>";
+  });
+  // 当前价
+  if(p){
+    h += '<div class="pricemark" style="bottom:' + pct(p.price) + '%;">' +
+           '<span class="p-tag">现价 ' + p.price.toFixed(2) + "</span>" +
+         "</div>";
+  }
+  h += "</div>";
+  return h;
+}
+
+/* ================= 编辑面板 ================= */
+function editPanelHtml(st){
+  var h = '<div class="edit-panel" id="edit-' + esc(st.symbol) + '">';
+  h += "<h4>名称 / 备注</h4>";
+  h += '<div class="row"><input class="wide" id="ename-' + esc(st.symbol) + '" value="' + esc(st.name) + '" placeholder="中文名">';
+  h += '<input class="note" id="enote-' + esc(st.symbol) + '" value="' + esc(st.notes || "") + '" placeholder="策略备注，如：250 开始看量，有压力就减"></div>';
+  h += '<div class="row"><span style="color:var(--muted);font-size:12px">财报日期</span><input type="date" id="eern-' + esc(st.symbol) + '" value="' + esc(st.earnings || "") + '"></div>';
+  h += "<h4>关键价位</h4>";
+  st.levels.forEach(function(lv, i){
+    h += '<div class="row">' +
+      '<input id="elv-l-' + i + "-" + esc(st.symbol) + '" value="' + esc(lv.label) + '" placeholder="名称" style="width:80px">' +
+      '<input id="elv-p-' + i + "-" + esc(st.symbol) + '" value="' + lv.price + '" type="number" step="any">' +
+      '<button class="del" onclick="delLevel(\'' + esc(st.symbol) + '\',' + i + ')">✕</button></div>';
+  });
+  h += '<div class="row"><button onclick="addLevel(\'' + esc(st.symbol) + '\')">＋加价位</button></div>';
+  h += "<h4>分区（Range）</h4>";
+  st.zones.forEach(function(z, i){
+    h += '<div class="row">' +
+      '<input id="ezn-n-' + i + "-" + esc(st.symbol) + '" value="' + esc(z.name) + '" style="width:80px">' +
+      '<input id="ezn-f-' + i + "-" + esc(st.symbol) + '" value="' + z.from + '" type="number" step="any" style="width:80px">' +
+      '<span style="color:var(--muted)">–</span>' +
+      '<input id="ezn-t-' + i + "-" + esc(st.symbol) + '" value="' + z.to + '" type="number" step="any" style="width:80px">' +
+      '<input type="color" id="ezn-c-' + i + "-" + esc(st.symbol) + '" value="' + esc(z.color) + '">' +
+      '<button class="del" onclick="delZone(\'' + esc(st.symbol) + '\',' + i + ')">✕</button></div>';
+  });
+  h += '<div class="row"><button onclick="addZone(\'' + esc(st.symbol) + '\')">＋加分区</button></div>';
+  h += "<h4>保存 / 手动价格</h4>";
+  h += '<div class="row"><button class="primary" onclick="saveStrategy(\'' + esc(st.symbol) + '\')">💾 保存策略</button>';
+  h += '<input class="manual-input" id="emp-' + esc(st.symbol) + '" type="number" step="any" placeholder="手动填价" value="' + (manualPrices[st.symbol] != null ? manualPrices[st.symbol] : "") + '">';
+  h += '<button onclick="setManual(\'' + esc(st.symbol) + '\')">用此价</button></div>';
+  h += "</div>";
+  return h;
+}
+
+function toggleEdit(sym){
+  var el = document.getElementById("edit-" + sym);
+  if(el) el.classList.toggle("open");
+}
+function getStock(sym){
+  return state.stocks.find(function(s){ return s.symbol === sym; });
+}
+function addLevel(sym){
+  getStock(sym).levels.push({ label: "新价位", price: 0 });
+  saveState(); renderAll();
+  var el = document.getElementById("edit-" + sym); if(el) el.classList.add("open");
+}
+function delLevel(sym, i){
+  getStock(sym).levels.splice(i, 1);
+  saveState(); renderAll();
+  var el = document.getElementById("edit-" + sym); if(el) el.classList.add("open");
+}
+function addZone(sym){
+  getStock(sym).zones.push({ name: "新区", from: 0, to: 0, color: "#4f8cff" });
+  saveState(); renderAll();
+  var el = document.getElementById("edit-" + sym); if(el) el.classList.add("open");
+}
+function delZone(sym, i){
+  getStock(sym).zones.splice(i, 1);
+  saveState(); renderAll();
+  var el = document.getElementById("edit-" + sym); if(el) el.classList.add("open");
+}
+function saveStrategy(sym){
+  var st = getStock(sym);
+  st.name = document.getElementById("ename-" + sym).value.trim();
+  st.notes = document.getElementById("enote-" + sym).value.trim();
+  var ernEl = document.getElementById("eern-" + sym);
+  if(ernEl) st.earnings = ernEl.value;
+  var newLevels = [];
+  st.levels.forEach(function(lv, i){
+    var label = document.getElementById("elv-l-" + i + "-" + sym);
+    var price = document.getElementById("elv-p-" + i + "-" + sym);
+    if(label && price) newLevels.push({ label: label.value.trim() || lv.label, price: parseFloat(price.value) || 0 });
+  });
+  st.levels = newLevels;
+  var newZones = [];
+  st.zones.forEach(function(z, i){
+    var n = document.getElementById("ezn-n-" + i + "-" + sym);
+    var f = document.getElementById("ezn-f-" + i + "-" + sym);
+    var t = document.getElementById("ezn-t-" + i + "-" + sym);
+    var c = document.getElementById("ezn-c-" + i + "-" + sym);
+    if(n && f && t) newZones.push({ name: n.value.trim() || z.name, from: parseFloat(f.value) || 0, to: parseFloat(t.value) || 0, color: c ? c.value : z.color });
+  });
+  st.zones = newZones;
+  saveState(); renderAll();
+}
+function setManual(sym){
+  var v = parseFloat(document.getElementById("emp-" + sym).value);
+  if(isNaN(v)) return;
+  manualPrices[sym] = v;
+  renderAll();
+  var el = document.getElementById("edit-" + sym); if(el) el.classList.add("open");
+}
+
+/* ================= 增删股票 ================= */
+function addStock(){
+  var input = document.getElementById("addSym");
+  var sym = input.value.trim().toUpperCase();
+  if(!sym) return;
+  if(state.stocks.some(function(s){ return s.symbol === sym; })){ input.value = ""; return; }
+  state.stocks.push({ symbol: sym, name: "", zones: [], levels: [], notes: "" });
+  saveState(); input.value = ""; renderAll(); refreshAll();
+}
+function removeStock(sym){
+  if(!confirm("确定删除 " + sym + " 及其策略配置？")) return;
+  state.stocks = state.stocks.filter(function(s){ return s.symbol !== sym; });
+  delete quotes[sym]; delete prevPrices[sym]; delete manualPrices[sym];
+  saveState(); renderAll();
+}
+
+/* ================= 刷新 & 提醒 ================= */
+function setStatus(txt, cls){
+  var el = document.getElementById("dataStatus");
+  el.textContent = txt;
+  el.className = "status " + (cls || "");
+}
+
+function checkCross(st){
+  var p = computePrice(st.symbol);
+  if(!p) return;
+  var prev = prevPrices[st.symbol];
+  if(prev == null){ prevPrices[st.symbol] = p.price; return; }
+  st.levels.forEach(function(lv){
+    var before = prev - lv.price, now = p.price - lv.price;
+    if(before * now < 0 || now === 0){
+      var dir = now > 0 || (now === 0 && before < 0) ? "上穿" : "下穿";
+      pushAlert(st.symbol, lv.label + " " + lv.price + " · 现价 " + p.price.toFixed(2) + " " + dir + (dir === "上穿" ? " ↑" : " ↓"));
+    }
+  });
+  prevPrices[st.symbol] = p.price;
+}
+
+function pushAlert(sym, msg){
+  var box = document.getElementById("alerts");
+  var div = document.createElement("div");
+  div.className = "alert";
+  div.innerHTML = "⚡ <b>" + esc(sym) + "</b> — " + esc(msg) + ' <span style="color:var(--muted);font-size:11px">(' + new Date().toLocaleTimeString("zh-CN",{hour12:false}) + "，点击关闭)</span>";
+  div.onclick = function(){ div.remove(); };
+  box.prepend(div);
+  while(box.children.length > 6) box.lastChild.remove();
+}
+
+function refreshAll(){
+  var symbols = state.stocks.map(function(s){ return s.symbol; });
+  if(!symbols.length){ setStatus("无股票", "bad"); return; }
+  setStatus("刷新中…", "");
+  var done = 0, ok = 0;
+  symbols.forEach(function(sym){
+    fetchQuote(sym).then(function(q){
+      quotes[sym] = q; ok++;
+    }).catch(function(){
+      // 保持旧数据；若从未成功则无数据
+    }).finally(function(){
+      done++;
+      if(done === symbols.length){
+        setStatus(ok === symbols.length ? ("全部正常 " + new Date().toLocaleTimeString("zh-CN",{hour12:false})) :
+                  (ok > 0 ? (ok + "/" + symbols.length + " 成功（失败可手动填价）") : "抓取失败 → 手动填价"),
+                  ok === symbols.length ? "ok" : (ok > 0 ? "" : "bad"));
+        state.stocks.forEach(checkCross);
+        firstLoad = false;
+        renderAll();
+      }
+    });
+  });
+}
+
+function startTimer(){
+  if(refreshTimer) clearInterval(refreshTimer);
+  var sec = parseInt(state.interval, 10) || 0;
+  if(sec > 0) refreshTimer = setInterval(refreshAll, sec * 1000);
+}
+
+/* ================= 事件绑定 ================= */
+function bindUI(){
+  if(HOSTED){
+    var ab = document.getElementById("apiBtn");
+    if(ab) ab.classList.add("hidden");   // 线上 key 在服务端，无需前端配置
+  }
+  document.getElementById("refreshBtn").onclick = refreshAll;
+  document.getElementById("apiBtn").onclick = function(){
+    var p = document.getElementById("apiPanel");
+    p.style.display = p.style.display === "none" ? "block" : "none";
+  };
+  document.getElementById("srcSel").value = state.dataSource || "yahoo";
+  document.getElementById("keyInput").value = state.apiKey || "";
+  document.getElementById("saveApiBtn").onclick = function(){
+    state.dataSource = document.getElementById("srcSel").value;
+    state.apiKey = document.getElementById("keyInput").value.trim();
+    saveState();
+    updateSourceLabel();
+    document.getElementById("apiPanel").style.display = "none";
+    refreshAll();
+  };
+  document.getElementById("intervalSel").onchange = function(){
+    state.interval = parseInt(this.value, 10);
+    saveState(); startTimer();
+  };
+  document.getElementById("intervalSel").value = String(state.interval);
+  if(document.getElementById("intervalSel").value !== String(state.interval)){
+    state.interval = 60; // 旧配置的短频率已移除，回落到 1 分钟
+    saveState();
+    document.getElementById("intervalSel").value = "60";
+  }
+  updateSourceLabel();
+}
+
+function updateSourceLabel(){
+  var small = document.querySelector("h1 small");
+  if(!small) return;
+  if(HOSTED){ small.textContent = "数据源: 服务端代理（Finnhub 实时）"; return; }
+  var names = { yahoo: "Yahoo", finnhub: "Finnhub", twelvedata: "Twelve Data" };
+  small.textContent = "数据源: " + (names[state.dataSource] || "Yahoo") + (state.apiKey ? "（已配 Key）" : "（未配 Key）");
+}
+
+/* 本地模式：读同目录 apikey.txt（finnhub=KEY 格式）自动配好数据源 */
+function loadKeyFile(){
+  return fetch("apikey.txt", { cache: "no-store" }).then(function(r){
+    if(!r.ok) throw new Error("no file");
+    return r.text();
+  }).then(function(txt){
+    var lines = txt.split(/\r?\n/);
+    for(var i = 0; i < lines.length; i++){
+      var line = lines[i].trim();
+      if(!line || line.charAt(0) === "#") continue;
+      var key = line.indexOf("=") >= 0 ? line.slice(line.indexOf("=") + 1).trim() : line;
+      if(key){
+        if(key !== state.apiKey){
+          state.apiKey = key;
+          if(!state.dataSource || state.dataSource === "yahoo") state.dataSource = "finnhub";
+          saveState();
+          document.getElementById("srcSel").value = state.dataSource;
+          document.getElementById("keyInput").value = key;
+          updateSourceLabel();
+        }
+        break;
+      }
+    }
+  }).catch(function(){ /* 没有 key 文件就静默跳过 */ });
+}
+
+/* ================= 口令闸门（仅线上模式） ================= */
+function showGate(msg){
+  document.getElementById("gate").classList.remove("hidden");
+  document.getElementById("gateErr").textContent = msg || "";
+  try{ document.getElementById("gateInput").focus(); }catch(e){}
+}
+function hideGate(){ document.getElementById("gate").classList.add("hidden"); }
+
+document.getElementById("gateForm").onsubmit = function(ev){
+  ev.preventDefault();
+  var pw = document.getElementById("gateInput").value.trim();
+  if(!pw) return;
+  var btn = document.getElementById("gateBtn");
+  var err = document.getElementById("gateErr");
+  btn.disabled = true; btn.textContent = "验证中…"; err.textContent = "";
+  fetch("/api/watch?mode=auth", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ password: pw })
+  }).then(function(r){
+    if(r.status === 500) throw new Error("服务端还没配 WATCH_PASSWORD");
+    if(!r.ok) throw new Error("口令不对，再试一次");
+    return r.json();
+  }).then(function(){
+    setToken(pw);
+    hideGate();
+    document.getElementById("gateInput").value = "";
+    if(appReady){ refreshAll(); } else { bootstrap(); }
+  }).catch(function(e){
+    clearToken();
+    err.textContent = (e && e.message) ? e.message : "验证失败";
+  }).then(function(){
+    btn.disabled = false; btn.textContent = "进入";
+  });
+};
+
+/* ================= 服务器策略更新提示 ================= */
+function showVersionBar(){
+  var bar = document.getElementById("versionBar");
+  if(!bar) return;
+  if(!serverConfig){ bar.classList.add("hidden"); bar.innerHTML = ""; return; }
+  bar.innerHTML =
+    "<span>🆕 服务器上有更新的策略（v" + serverConfig.version + "，你当前 v" + (state.version || 0) +
+    "）。拉取会用它覆盖你对股票的改动。</span>" +
+    '<button class="primary" id="applyVerBtn">拉取最新策略</button>' +
+    '<button id="dismissVerBtn">暂不</button>';
+  bar.classList.remove("hidden");
+  document.getElementById("applyVerBtn").onclick = function(){
+    var v = serverConfig.version, iv = serverConfig.interval;
+    state.stocks = JSON.parse(JSON.stringify(serverConfig.stocks));
+    state.version = v;
+    if(iv) state.interval = iv;
+    serverConfig = null;
+    saveState(); bindUI(); renderAll(); showVersionBar(); refreshAll();
+  };
+  document.getElementById("dismissVerBtn").onclick = function(){
+    serverConfig = null; showVersionBar();
+  };
+}
+
+/* ================= 启动 ================= */
+function startApp(){
+  if(appReady) return;
+  appReady = true;
+  bindUI();
+  renderAll();
+  var pre = HOSTED ? Promise.resolve() : loadKeyFile();
+  pre.then(function(){ refreshAll(); });
+  startTimer();
+  setInterval(function(){ renderAll(); }, 60000);
+}
+
+function fetchServerConfig(){
+  return fetchJSON(HOSTED ? "/api/watch?mode=config" : "/config", 10000, authHeaders());
+}
+
+function bootstrap(){
+  if(HOSTED && !getToken()){ showGate(""); return; }
+  fetchServerConfig().then(function(cfg){
+    mergeServerConfig(state, cfg);
+    saveState();
+    startApp();
+    showVersionBar();
+  }).catch(function(e){
+    if(e && e.status === 401){ clearToken(); showGate("口令已失效，请重新输入"); return; }
+    startApp();
+    setStatus("策略配置没拿到（" + ((e && e.message) || "网络错误") + "），可直接手动填价", "bad");
+  });
+}
+bootstrap();
+</script>
+</body>
+</html>
