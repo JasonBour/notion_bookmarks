@@ -23,7 +23,7 @@
     "iconv-lite": "^0.6.3",
     "lucide-react": "^0.468.0",
     "lunar-javascript": "^1.7.3",
-    "next": "15.1.0",
+    "next": "15.1.11",
     "next-themes": "^0.4.6",
     "node-html-parser": "^7.0.1",
     "qweather-icons": "^1.7.0",
