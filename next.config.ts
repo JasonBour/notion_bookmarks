@@ -17,9 +17,12 @@ const config: NextConfig = {
     maxInactiveAge: 25 * 1000,
     pagesBufferLength: 2,
   },
-  // 个人美股盯盘页：/watch → public/watch.html
+  // 个人美股盯盘页：/watch → 精简版，/watch-full → 详细版
   async rewrites() {
-    return [{ source: "/watch", destination: "/watch.html" }];
+    return [
+      { source: "/watch", destination: "/watch.html" },
+      { source: "/watch-full", destination: "/watch-full.html" },
+    ];
   },
 };
 

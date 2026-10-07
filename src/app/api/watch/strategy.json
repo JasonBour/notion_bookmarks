@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "interval": 60,
   "stocks": [
     {
@@ -8,13 +8,30 @@
       "earnings": "2026-09-30",
       "earningsNote": "美光 FY26Q4 · 9/30 盘后 4:30PM ET（北京 10/1 04:30）· 官方已确认 · 剩 5 天",
       "zones": [
-        { "name": "强烈建议买", "from": 980, "to": 1042, "color": "#f97316" }
+        {
+          "name": "强烈建议买",
+          "from": 980,
+          "to": 1042,
+          "color": "#f97316"
+        }
       ],
       "levels": [
-        { "label": "买入区上沿", "price": 1042 },
-        { "label": "强压", "price": 1070 },
-        { "label": "期权天量目标", "price": 1100 },
-        { "label": "财报前上沿", "price": 1130 }
+        {
+          "label": "买入区上沿",
+          "price": 1042
+        },
+        {
+          "label": "强压",
+          "price": 1070
+        },
+        {
+          "label": "期权天量目标",
+          "price": 1100
+        },
+        {
+          "label": "财报前上沿",
+          "price": 1130
+        }
       ],
       "notes": "昨天说跌下 1070 就会去 1042，已验证——很多人在低位买入，不用担心，买入看好财报。熊猫助攻后放量破 1070 上 1080，天量看 1100（明天到期期权）。财报前 range 1042-1130，财报预测已算好，之后分享。"
     },
@@ -24,13 +41,30 @@
       "earnings": "2026-11-10",
       "earningsNote": "Nebius Q3 · 预计 11/10 盘前（第三方估算，待官方确认）",
       "zones": [
-        { "name": "波段买区", "from": 208, "to": 220, "color": "#3b82f6" }
+        {
+          "name": "波段买区",
+          "from": 208,
+          "to": 220,
+          "color": "#3b82f6"
+        }
       ],
       "levels": [
-        { "label": "回踩位", "price": 218 },
-        { "label": "回踩确认", "price": 222 },
-        { "label": "关键位", "price": 237.5 },
-        { "label": "双顶", "price": 248 }
+        {
+          "label": "回踩位",
+          "price": 218
+        },
+        {
+          "label": "回踩确认",
+          "price": 222
+        },
+        {
+          "label": "关键位",
+          "price": 237.5
+        },
+        {
+          "label": "双顶",
+          "price": 248
+        }
       ],
       "notes": "9/24 没过 237.5 回踩 218-222（盘前到 222，群友买入），开盘大涨 248，三重催化：①法巴目标价提到 399 ②CRWV 同行上调目标价 ③Oracle Jupiter delay 算力更吃紧。盘中回落 239 等中美好消息，熊猫助攻后回涨 248 双顶又打下去。10月/财报前可能大回落，等低位再接。"
     },
@@ -40,22 +74,38 @@
       "earnings": "2026-12-01",
       "earningsNote": "Marvell FY27Q3 · 预计 12/1–12/2 盘后（第三方估算）；另 10/6 有 Investor Day",
       "zones": [
-        { "name": "必买", "from": 220, "to": 230, "color": "#e04040" }
+        {
+          "name": "必买",
+          "from": 220,
+          "to": 230,
+          "color": "#e04040"
+        }
       ],
       "levels": [
-        { "label": "必买下沿", "price": 220 },
-        { "label": "必买上沿", "price": 230 }
+        {
+          "label": "必买下沿",
+          "price": 220
+        },
+        {
+          "label": "必买上沿",
+          "price": 230
+        }
       ],
       "notes": "波段股 · Must buy：220-230 埋伏等明年行情。10/6 有 Investor Day。"
     },
     {
       "symbol": "COHR",
       "name": "Coherent",
-      "zones": [],
-      "levels": [
-        { "label": "必买", "price": 289 }
+      "zones": [
+        {
+          "name": "必买",
+          "from": 289,
+          "to": 289,
+          "color": "#e04040",
+          "cap": true
+        }
       ],
-      "notes": "波段股 · Must buy：289 附近埋伏，等明年行情。"
+      "notes": "波段股 · Must buy：≤289 埋伏，等明年行情。"
     },
     {
       "symbol": "INTC",
@@ -63,11 +113,22 @@
       "earnings": "2026-10-22",
       "earningsNote": "Intel Q3 · 10/22 盘后（北京 10/23 04:30）· 已确认",
       "zones": [
-        { "name": "必买", "from": 100, "to": 108, "color": "#e04040" }
+        {
+          "name": "必买",
+          "from": 100,
+          "to": 108,
+          "color": "#e04040"
+        }
       ],
       "levels": [
-        { "label": "必买下沿", "price": 100 },
-        { "label": "必买上沿", "price": 108 }
+        {
+          "label": "必买下沿",
+          "price": 100
+        },
+        {
+          "label": "必买上沿",
+          "price": 108
+        }
       ],
       "notes": "波段股 · Must buy：100-108 埋伏等明年。agentic AI 时代带涨 CPU。CPU 三兄弟：AMD / INTC / ARM。"
     },
@@ -75,11 +136,22 @@
       "symbol": "LRCX",
       "name": "Lam Research",
       "zones": [
-        { "name": "必买", "from": 290, "to": 298, "color": "#e04040" }
+        {
+          "name": "必买",
+          "from": 290,
+          "to": 298,
+          "color": "#e04040"
+        }
       ],
       "levels": [
-        { "label": "必买下沿", "price": 290 },
-        { "label": "必买上沿", "price": 298 }
+        {
+          "label": "必买下沿",
+          "price": 290
+        },
+        {
+          "label": "必买上沿",
+          "price": 298
+        }
       ],
       "notes": "波段股 · Must buy：290-298 埋伏等明年行情。"
     },
@@ -87,11 +159,22 @@
       "symbol": "AVGO",
       "name": "Broadcom",
       "zones": [
-        { "name": "强烈建议买", "from": 340, "to": 350, "color": "#f97316" }
+        {
+          "name": "强烈建议买",
+          "from": 340,
+          "to": 350,
+          "color": "#f97316"
+        }
       ],
       "levels": [
-        { "label": "买入区下沿", "price": 340 },
-        { "label": "买入区上沿", "price": 350 }
+        {
+          "label": "买入区下沿",
+          "price": 340
+        },
+        {
+          "label": "买入区上沿",
+          "price": 350
+        }
       ],
       "notes": "波段股 · 强烈建议买入：340-350 埋伏等行情。"
     },
@@ -99,11 +182,22 @@
       "symbol": "VRT",
       "name": "Vertiv",
       "zones": [
-        { "name": "强烈建议买", "from": 234, "to": 240, "color": "#f97316" }
+        {
+          "name": "强烈建议买",
+          "from": 234,
+          "to": 240,
+          "color": "#f97316"
+        }
       ],
       "levels": [
-        { "label": "买入区下沿", "price": 234 },
-        { "label": "买入区上沿", "price": 240 }
+        {
+          "label": "买入区下沿",
+          "price": 234
+        },
+        {
+          "label": "买入区上沿",
+          "price": 240
+        }
       ],
       "notes": "波段股 · 强烈建议买入：234-240 埋伏等行情。"
     },
@@ -111,11 +205,22 @@
       "symbol": "TSLA",
       "name": "Tesla",
       "zones": [
-        { "name": "强烈建议买", "from": 360, "to": 370, "color": "#f97316" }
+        {
+          "name": "强烈建议买",
+          "from": 360,
+          "to": 370,
+          "color": "#f97316"
+        }
       ],
       "levels": [
-        { "label": "买入区下沿", "price": 360 },
-        { "label": "买入区上沿", "price": 370 }
+        {
+          "label": "买入区下沿",
+          "price": 360
+        },
+        {
+          "label": "买入区上沿",
+          "price": 370
+        }
       ],
       "notes": "波段股 · 强烈建议买入：360-370 埋伏等行情。"
     },
@@ -125,12 +230,26 @@
       "earnings": "2026-10-28",
       "earningsNote": "Meta Q3 · 10/28 盘后 4:30PM ET（北京 10/29 04:30）· 已确认",
       "zones": [
-        { "name": "波段买区", "from": 710, "to": 748, "color": "#3b82f6" }
+        {
+          "name": "波段买区",
+          "from": 710,
+          "to": 748,
+          "color": "#3b82f6"
+        }
       ],
       "levels": [
-        { "label": "买区下沿", "price": 710 },
-        { "label": "买区上沿", "price": 748 },
-        { "label": "机构目标价", "price": 796 }
+        {
+          "label": "买区下沿",
+          "price": 710
+        },
+        {
+          "label": "买区上沿",
+          "price": 748
+        },
+        {
+          "label": "机构目标价",
+          "price": 796
+        }
       ],
       "notes": "短期波段强股：710-748。如果财报后上 800+，可能拆股。机构目标价 796。"
     },
@@ -138,10 +257,18 @@
       "symbol": "MP",
       "name": "MP Materials",
       "zones": [
-        { "name": "特殊机会", "from": 40, "to": 50, "color": "#8b5cf6" }
+        {
+          "name": "特殊机会",
+          "from": 40,
+          "to": 50,
+          "color": "#8b5cf6"
+        }
       ],
       "levels": [
-        { "label": "50 关口", "price": 50 }
+        {
+          "label": "50 关口",
+          "price": 50
+        }
       ],
       "notes": "特殊情况：50 以下。最终阶段——物理 AI、机器人等最重要的公司之一，稀土对机器人十分重要。"
     },
@@ -150,12 +277,47 @@
       "name": "Circle Internet Group",
       "zones": [],
       "levels": [
-        { "label": "100 关口", "price": 100 },
-        { "label": "颈线 · 减仓", "price": 89.5 },
-        { "label": "阳线起点", "price": 87.4 },
-        { "label": "前低", "price": 78.3 }
+        {
+          "label": "100 关口",
+          "price": 100
+        },
+        {
+          "label": "颈线 · 减仓",
+          "price": 89.5
+        },
+        {
+          "label": "阳线起点",
+          "price": 87.4
+        },
+        {
+          "label": "前低",
+          "price": 78.3
+        }
       ],
       "notes": "100 关口没有顺利通过（9/21 最高 99.97 就是过不去），大阳线起点快要被跌破 → 按假突破处理，先做利润保护。跌破颈线约 89.5 减仓。"
+    },
+    {
+      "symbol": "ANET",
+      "name": "Arista Networks",
+      "zones": [
+        {
+          "name": "必买",
+          "from": 188,
+          "to": 198,
+          "color": "#e04040"
+        }
+      ],
+      "levels": [
+        {
+          "label": "必买下沿",
+          "price": 188
+        },
+        {
+          "label": "必买上沿",
+          "price": 198
+        }
+      ],
+      "notes": "波段股 · Must buy：188-198 埋伏等明年行情。"
     }
   ]
 }
